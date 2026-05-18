@@ -171,11 +171,6 @@ public partial class SplashWindow : Window
     /// </summary>
     public static void RestartApp()
     {
-        var mainModule = Environment.ProcessPath;
-        var exeAssembly = System.Reflection.Assembly.GetEntryAssembly()?.Location;
-
-        ProcessStartInfo psi;
-
         // Running inside an AppImage: Environment.ProcessPath points into the
         // squashfs mount which is torn down on exit, so a direct relaunch
         // would race with the unmount. Spawn a detached script that waits
@@ -190,21 +185,24 @@ public partial class SplashWindow : Window
             return;
         }
 
-        // If the process is the native host .exe, just relaunch it.
-        // If we're running via `dotnet <dll>`, relaunch through dotnet.
-        if (!string.IsNullOrEmpty(mainModule)
-            && mainModule.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-            && !mainModule.EndsWith("dotnet.exe", StringComparison.OrdinalIgnoreCase))
+        var mainModule = Environment.ProcessPath;
+        if (string.IsNullOrEmpty(mainModule))
+            return;
+
+        ProcessStartInfo psi;
+        var fileName = Path.GetFileNameWithoutExtension(mainModule);
+
+        if (string.Equals(fileName, "dotnet", StringComparison.OrdinalIgnoreCase))
         {
-            psi = new ProcessStartInfo
-            {
-                FileName = mainModule,
-                UseShellExecute = false
-            };
-        }
-        else if (!string.IsNullOrEmpty(exeAssembly))
-        {
-            // Running through dotnet — relaunch as `dotnet <dll>`
+            // Dev path: app launched via `dotnet xyz.dll`. Re-spawn the same.
+            // Assembly.Location is valid here because this branch only runs
+            // when we are NOT a single-file publish (where ProcessPath points
+            // at our own native host, not at dotnet).
+#pragma warning disable IL3000
+            var exeAssembly = System.Reflection.Assembly.GetEntryAssembly()?.Location;
+#pragma warning restore IL3000
+            if (string.IsNullOrEmpty(exeAssembly))
+                return;
             psi = new ProcessStartInfo
             {
                 FileName = "dotnet",
@@ -214,7 +212,13 @@ public partial class SplashWindow : Window
         }
         else
         {
-            return;
+            // Native host: single-file publish on every platform. Just relaunch
+            // ourselves directly.
+            psi = new ProcessStartInfo
+            {
+                FileName = mainModule,
+                UseShellExecute = false
+            };
         }
 
         psi.WorkingDirectory = AppContext.BaseDirectory;

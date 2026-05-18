@@ -52,7 +52,8 @@
       "Bash(python3 -c ' *)",
       "Bash(curl -s \"https://packages.ubuntu.com/noble/libfuse2t64\" -o /tmp/p1.html)",
       "Read(//tmp/**)",
-      "Bash(curl -s \"https://packages.ubuntu.com/noble/libfuse2\" -o /tmp/p2.html)"
+      "Bash(curl -s \"https://packages.ubuntu.com/noble/libfuse2\" -o /tmp/p2.html)",
+      "Bash(dotnet publish *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\domin\\.claude\\plans"

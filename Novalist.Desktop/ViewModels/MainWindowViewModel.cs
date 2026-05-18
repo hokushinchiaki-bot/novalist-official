@@ -784,7 +784,6 @@ public partial class MainWindowViewModel : ObservableObject
             Toasts.Remove(toast);
     }
 
-    private CancellationTokenSource? _notificationCts;
     private DispatcherTimer? _statusBarRefreshTimer;
 
     /// <summary>
@@ -849,7 +848,11 @@ public partial class MainWindowViewModel : ObservableObject
 
         // Subscribe to extension entity refresh requests
         host.EntityRefreshRequested += () =>
-            Dispatcher.UIThread.Post(async () => await EntityPanel.LoadAllAsync());
+            Dispatcher.UIThread.Post(async () =>
+            {
+                if (EntityPanel != null)
+                    await EntityPanel.LoadAllAsync();
+            });
 
         // Subscribe to content view activation requests
         host.ContentViewActivated += (viewKey, displayName) =>
