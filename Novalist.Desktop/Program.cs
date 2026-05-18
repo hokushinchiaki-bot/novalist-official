@@ -13,6 +13,16 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // Avalonia.Controls.WebView on Linux ships only a GtkX11 adapter, so
+        // GTK must initialise against X11 (XWayland on Wayland sessions).
+        // Without this, the WebView throws "Unable to initialize GTK" on every
+        // Wayland-default distro. Avalonia's own backend ignores GDK_BACKEND.
+        if (OperatingSystem.IsLinux()
+            && !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DISPLAY")))
+        {
+            Environment.SetEnvironmentVariable("GDK_BACKEND", "x11");
+        }
+
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
             LogCrash("AppDomain.UnhandledException", e.ExceptionObject as Exception);
         TaskScheduler.UnobservedTaskException += (_, e) =>

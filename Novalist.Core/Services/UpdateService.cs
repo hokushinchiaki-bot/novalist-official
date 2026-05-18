@@ -119,6 +119,12 @@ public sealed class UpdateService : IUpdateService
         if (!File.Exists(installerPath))
             return;
 
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            LaunchLinuxAppImageUpdate(installerPath);
+            return;
+        }
+
         var psi = new System.Diagnostics.ProcessStartInfo
         {
             FileName = installerPath,
@@ -134,6 +140,94 @@ public sealed class UpdateService : IUpdateService
 
         System.Diagnostics.Process.Start(psi);
     }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("linux")]
+    private static void LaunchLinuxAppImageUpdate(string newAppImagePath)
+    {
+        // The new download is always made executable; if we end up launching it
+        // from the downloads folder (read-only install location fallback) it
+        // still needs the exec bit.
+        TrySetExecutable(newAppImagePath);
+
+        // The AppImage runtime sets APPIMAGE to the absolute path of the
+        // running .AppImage file. If it's missing we're not running from one
+        // (developer build, extracted bundle, etc.) — fall back to opening the
+        // download folder so the user can move the file themselves.
+        var currentAppImage = Environment.GetEnvironmentVariable("APPIMAGE");
+        if (string.IsNullOrEmpty(currentAppImage) || !File.Exists(currentAppImage))
+        {
+            OpenFolder(Path.GetDirectoryName(newAppImagePath) ?? string.Empty);
+            return;
+        }
+
+        // Write a detached bash script that waits for *this* process to exit,
+        // replaces the running AppImage in place, and re-launches it. If the
+        // in-place replacement fails (read-only mount, permission denied) it
+        // launches the freshly downloaded copy instead so the user is never
+        // left without a working app.
+        var pid = Environment.ProcessId;
+        var scriptPath = Path.Combine(Path.GetTempPath(),
+            $"novalist-update-{Guid.NewGuid():N}.sh");
+
+        var newQ = BashQuote(newAppImagePath);
+        var curQ = BashQuote(currentAppImage);
+        var script =
+            "#!/bin/bash\n" +
+            "set -u\n" +
+            $"while kill -0 {pid} 2>/dev/null; do sleep 0.2; done\n" +
+            "sleep 0.5\n" +
+            $"if mv -f {newQ} {curQ} 2>/dev/null; then\n" +
+            $"  chmod +x {curQ}\n" +
+            $"  TARGET={curQ}\n" +
+            "else\n" +
+            $"  chmod +x {newQ}\n" +
+            $"  TARGET={newQ}\n" +
+            "fi\n" +
+            "setsid nohup \"$TARGET\" </dev/null >/dev/null 2>&1 &\n" +
+            "rm -f \"$0\"\n";
+
+        File.WriteAllText(scriptPath, script);
+        TrySetExecutable(scriptPath);
+
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = "/bin/bash",
+            Arguments = $"\"{scriptPath}\"",
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        });
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("linux")]
+    private static void TrySetExecutable(string path)
+    {
+        try
+        {
+            File.SetUnixFileMode(path,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
+        catch { /* best effort */ }
+    }
+
+    private static void OpenFolder(string folder)
+    {
+        if (string.IsNullOrEmpty(folder)) return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "xdg-open",
+                Arguments = $"\"{folder}\"",
+                UseShellExecute = false,
+            });
+        }
+        catch { /* best effort */ }
+    }
+
+    private static string BashQuote(string s) =>
+        "'" + s.Replace("'", "'\\''") + "'";
 
     private static GitHubReleaseAsset? FindPlatformAsset(GitHubRelease release)
     {
@@ -158,7 +252,7 @@ public sealed class UpdateService : IUpdateService
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             return release.Assets.FirstOrDefault(a =>
-                a.Name != null && a.Name.Contains("linux", StringComparison.OrdinalIgnoreCase));
+                a.Name != null && a.Name.EndsWith(".AppImage", StringComparison.OrdinalIgnoreCase));
 
         return null;
     }

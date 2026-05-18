@@ -1,39 +1,4 @@
 {
-  "hooks": {
-    "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -File \"E:/git/novalist-official/.dual-graph/prime.ps1\""
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -File \"E:/git/novalist-official/.dual-graph/stop_hook.ps1\""
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -File \"E:/git/novalist-official/.dual-graph/prime.ps1\""
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Bash(dotnet build *)",
@@ -77,10 +42,55 @@
       "Bash(xargs grep -l \"context.*sidebar\\\\|scene.*properties\" -i)",
       "Bash(xargs grep -l \"class SceneData\\\\|class ChapterData\")",
       "Bash(find ~/.nuget/packages -iname \"*nativewebview*\" -o -iname \"*avaloniawebview*\" -o -iname \"*Avalonia.Labs*\" 2>/dev/null | head -10)",
-      "Read(//Users/dominikgoblirsch/.nuget/packages/**)"
+      "Read(//Users/dominikgoblirsch/.nuget/packages/**)",
+      "Bash(xdpyinfo)",
+      "Bash(GDK_BACKEND=x11 gtk-launch --help)",
+      "Bash(find ~/.nuget/packages/avalonia.controls.webview -type f \\\\\\( -name \"*.dll\" -o -name \"*.so\" \\\\\\) 2>/dev/null | head -30)",
+      "Read(//home/drommedhar/.nuget/packages/avalonia.controls.webview/**)",
+      "Bash(find ~/.nuget/packages -name \"Avalonia.Controls.Gtk*\" 2>/dev/null | head; echo \"---\"; strings /home/drommedhar/.nuget/packages/avalonia.controls.webview/12.0.1/lib/net8.0/Avalonia.Controls.WebView.dll 2>/dev/null | grep -i -E \"webkit|libsoup|gtk-3|gtk-4\" | sort -u | head -20)",
+      "Read(//home/drommedhar/.nuget/packages/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s \"https://packages.ubuntu.com/noble/libfuse2t64\" -o /tmp/p1.html)",
+      "Read(//tmp/**)",
+      "Bash(curl -s \"https://packages.ubuntu.com/noble/libfuse2\" -o /tmp/p2.html)"
     ],
     "additionalDirectories": [
       "C:\\Users\\domin\\.claude\\plans"
+    ]
+  },
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -File \"E:/git/novalist-official/.dual-graph/prime.ps1\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -File \"E:/git/novalist-official/.dual-graph/stop_hook.ps1\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -File \"E:/git/novalist-official/.dual-graph/prime.ps1\""
+          }
+        ]
+      }
     ]
   }
 }

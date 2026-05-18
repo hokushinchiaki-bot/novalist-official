@@ -44,12 +44,12 @@ jobs:
             publish_dir: novalist-macos-arm64
             artifact_name: novalist-macos-arm64-dmg
             package_name: novalist-macos-arm64.dmg
-          # - label: Linux x64
-          #   os: ubuntu-latest
-          #   rid: linux-x64
-          #   publish_dir: novalist-linux-x64
-          #   artifact_name: novalist-linux-x64
-          #   package_name: novalist-linux-x64.tar.gz
+          - label: Linux x64
+            os: ubuntu-24.04
+            rid: linux-x64
+            publish_dir: novalist-linux-x64
+            artifact_name: novalist-linux-x64-appimage
+            package_name: Novalist-x86_64.AppImage
 
     steps:
       - name: Checkout
@@ -201,24 +201,117 @@ jobs:
           hdiutil convert "${rw_dmg}" -format UDZO -o "${final_dmg_base}"
           rm -f "${rw_dmg}"
 
-      - name: Package app (Linux tarball)
+      - name: Package app (Linux AppImage)
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           publish_dir="${GITHUB_WORKSPACE}/dist/${{ matrix.publish_dir }}"
+          appdir="${GITHUB_WORKSPACE}/AppDir"
           artifacts_dir="${GITHUB_WORKSPACE}/artifacts"
 
+          # webkit2gtk-4.1 ABI (libsoup3-based) is what Avalonia.Controls.WebView
+          # binds against. Available on Ubuntu 24.04+ / Debian 13+.
           sudo apt-get update
-          sudo apt-get install -y imagemagick
+          sudo apt-get install -y --no-install-recommends \
+            imagemagick \
+            libwebkit2gtk-4.1-0 \
+            libjavascriptcoregtk-4.1-0 \
+            libsoup-3.0-0 \
+            libgtk-3-0 \
+            libgtk-3-bin \
+            librsvg2-common \
+            libfuse2t64 \
+            gettext \
+            desktop-file-utils \
+            patchelf \
+            wget
 
-          convert "${GITHUB_WORKSPACE}/Novalist.Desktop/novalist.ico[0]" -resize 256x256 "PNG32:${publish_dir}/${{ env.LINUX_ICON_FILE }}"
-          cp '.github/installers/linux/novalist.desktop.template' "${publish_dir}/novalist.desktop.template"
-          cp '.github/installers/linux/install-desktop-entry.sh' "${publish_dir}/install-desktop-entry.sh"
-          chmod +x "${publish_dir}/install-desktop-entry.sh"
+          convert "${GITHUB_WORKSPACE}/Novalist.Desktop/novalist.ico[0]" -resize 256x256 \
+            "PNG32:${GITHUB_WORKSPACE}/${{ env.LINUX_ICON_FILE }}"
+
+          # ── AppDir layout ────────────────────────────────────────────
+          rm -rf "${appdir}"
+          mkdir -p \
+            "${appdir}/usr/bin" \
+            "${appdir}/usr/share/applications" \
+            "${appdir}/usr/share/icons/hicolor/256x256/apps" \
+            "${appdir}/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1/injected-bundle"
+
+          cp -a "${publish_dir}/." "${appdir}/usr/bin/"
+          chmod +x "${appdir}/usr/bin/${{ env.EXECUTABLE_NAME }}"
+
+          # Bundle webkit2gtk helper binaries — these are dlopen-ed by the
+          # WebKit network/web processes and must live at WEBKIT_EXEC_PATH.
+          wk_libdir="/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1"
+          cp "${wk_libdir}/WebKitNetworkProcess" \
+             "${appdir}/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1/"
+          cp "${wk_libdir}/WebKitWebProcess" \
+             "${appdir}/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1/" 2>/dev/null \
+             || cp "${wk_libdir}/MiniBrowser" \
+                   "${appdir}/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1/" 2>/dev/null || true
+          if [ -d "${wk_libdir}/injected-bundle" ]; then
+            cp -a "${wk_libdir}/injected-bundle/." \
+                  "${appdir}/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1/injected-bundle/"
+          fi
+
+          # Desktop entry + icon at AppDir root (appimagetool requires this).
+          cat > "${appdir}/novalist.desktop" <<'EOF'
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=Novalist
+          Comment=Standalone novel planning and writing app
+          Exec=Novalist.Desktop
+          Icon=novalist
+          Terminal=false
+          Categories=Office;WordProcessor;
+          StartupNotify=true
+          EOF
+          cp "${appdir}/novalist.desktop" "${appdir}/usr/share/applications/"
+          cp "${GITHUB_WORKSPACE}/${{ env.LINUX_ICON_FILE }}" "${appdir}/novalist.png"
+          cp "${GITHUB_WORKSPACE}/${{ env.LINUX_ICON_FILE }}" \
+             "${appdir}/usr/share/icons/hicolor/256x256/apps/novalist.png"
+
+          # ── linuxdeploy + GTK plugin + appimagetool ──────────────────
+          cd "${GITHUB_WORKSPACE}"
+          wget -q -O linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q -O linuxdeploy-plugin-gtk.sh https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh
+          wget -q -O appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x linuxdeploy linuxdeploy-plugin-gtk.sh appimagetool
+
+          export NO_STRIP=true
+          export DEPLOY_GTK_VERSION=3
+
+          ./linuxdeploy --appdir "${appdir}" \
+            --plugin gtk \
+            --executable "${appdir}/usr/bin/${{ env.EXECUTABLE_NAME }}" \
+            --library /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 \
+            --library /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 \
+            --library /usr/lib/x86_64-linux-gnu/libsoup-3.0.so.0 \
+            --desktop-file "${appdir}/usr/share/applications/novalist.desktop" \
+            --icon-file "${appdir}/novalist.png"
+
+          # linuxdeploy installs an AppRun that handles LD_LIBRARY_PATH and GTK
+          # env. Wrap it so we can also point WebKit at our bundled helpers
+          # before the .NET runtime spawns them.
+          mv "${appdir}/AppRun" "${appdir}/AppRun.linuxdeploy"
+          cat > "${appdir}/AppRun" <<'EOF'
+          #!/bin/bash
+          HERE="$(dirname "$(readlink -f "${0}")")"
+          export WEBKIT_EXEC_PATH="${HERE}/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1"
+          export WEBKIT_INJECTED_BUNDLE_PATH="${HERE}/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1/injected-bundle"
+          # Disable WebKit's sandbox — bubblewrap inside AppImage is unreliable
+          # across host kernels and user-namespace policies.
+          export WEBKIT_FORCE_SANDBOX=0
+          export WEBKIT_DISABLE_COMPOSITING_MODE=1
+          exec "${HERE}/AppRun.linuxdeploy" "$@"
+          EOF
+          chmod +x "${appdir}/AppRun"
 
           mkdir -p "${artifacts_dir}"
-          tar -C "${GITHUB_WORKSPACE}/dist" -czf "${artifacts_dir}/${{ matrix.package_name }}" "${{ matrix.publish_dir }}"
+          ARCH=x86_64 ./appimagetool --no-appstream \
+            "${appdir}" "${artifacts_dir}/${{ matrix.package_name }}"
 
       - name: Upload packaged artifact
         uses: actions/upload-artifact@v4
@@ -499,5 +592,6 @@ jobs:
           files: |
             release-assets/*.dmg
             release-assets/*.exe
+            release-assets/*.AppImage
             release-assets/*.nupkg
             release-assets/*.zip

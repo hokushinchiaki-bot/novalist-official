@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -175,6 +176,20 @@ public partial class SplashWindow : Window
 
         ProcessStartInfo psi;
 
+        // Running inside an AppImage: Environment.ProcessPath points into the
+        // squashfs mount which is torn down on exit, so a direct relaunch
+        // would race with the unmount. Spawn a detached script that waits
+        // for us to exit, then execs the AppImage file (the runtime mounts
+        // a fresh copy).
+        var appImage = Environment.GetEnvironmentVariable("APPIMAGE");
+        if (OperatingSystem.IsLinux()
+            && !string.IsNullOrEmpty(appImage)
+            && File.Exists(appImage))
+        {
+            RestartViaAppImage(appImage);
+            return;
+        }
+
         // If the process is the native host .exe, just relaunch it.
         // If we're running via `dotnet <dll>`, relaunch through dotnet.
         if (!string.IsNullOrEmpty(mainModule)
@@ -204,6 +219,45 @@ public partial class SplashWindow : Window
 
         psi.WorkingDirectory = AppContext.BaseDirectory;
         Process.Start(psi);
+
+        if (Avalonia.Application.Current?.ApplicationLifetime is
+            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("linux")]
+    private static void RestartViaAppImage(string appImagePath)
+    {
+        var pid = Environment.ProcessId;
+        var scriptPath = Path.Combine(Path.GetTempPath(),
+            $"novalist-restart-{Guid.NewGuid():N}.sh");
+        var quoted = "'" + appImagePath.Replace("'", "'\\''") + "'";
+
+        var script =
+            "#!/bin/bash\n" +
+            "set -u\n" +
+            $"while kill -0 {pid} 2>/dev/null; do sleep 0.2; done\n" +
+            "sleep 0.5\n" +
+            $"setsid nohup {quoted} </dev/null >/dev/null 2>&1 &\n" +
+            "rm -f \"$0\"\n";
+
+        File.WriteAllText(scriptPath, script);
+        try
+        {
+            File.SetUnixFileMode(scriptPath,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+        catch { /* best effort */ }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "/bin/bash",
+            Arguments = $"\"{scriptPath}\"",
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        });
 
         if (Avalonia.Application.Current?.ApplicationLifetime is
             Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
