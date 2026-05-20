@@ -10,6 +10,20 @@ public partial class ContextSidebarView : UserControl
     public ContextSidebarView()
     {
         InitializeComponent();
+
+        DataContextChanged += (_, _) =>
+        {
+            var vm = DataContext as ContextSidebarViewModel;
+            Novalist.Desktop.Utilities.Log.Info(
+                $"ContextSidebarView DataContext changed: VM={(vm == null ? "null" : "set")}, IsContextAvailable={vm?.IsContextAvailable}, HasAnyContent={vm?.HasAnyContent}.");
+        };
+
+        AttachedToVisualTree += (_, _) =>
+        {
+            var vm = DataContext as ContextSidebarViewModel;
+            Novalist.Desktop.Utilities.Log.Info(
+                $"ContextSidebarView attached to visual tree. Bounds={Bounds.Width}x{Bounds.Height}, VM={(vm == null ? "null" : "set")}.");
+        };
     }
 
     private static ContextSidebarSceneAnalysisViewModel? GetSceneAnalysis(object? sender)

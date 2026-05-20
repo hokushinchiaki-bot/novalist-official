@@ -623,7 +623,8 @@ public partial class MapView : UserControl
                     _vm?.SetSelectedPin(null, null);
                     break;
                 case "toast":
-                    Log.Debug("[MapView] toast: " + (doc.RootElement.TryGetProperty("text", out var tt) ? tt.GetString() : ""));
+                    // Toast text can contain location / marker names (story content) — log only that a toast fired.
+                    Log.Debug("[MapView] toast shown");
                     break;
                 case "buildingSelected":
                     var bId = doc.RootElement.TryGetProperty("buildingId", out var bid) ? bid.GetString() : null;
@@ -712,8 +713,10 @@ public partial class MapView : UserControl
                     _ = HandleViewChangedAsync(doc.RootElement);
                     break;
                 case "log":
+                    // Raw map.html console output can echo marker / location names (story
+                    // content). Keep it in the debugger only — never in the diagnostic file log.
                     var txt = doc.RootElement.TryGetProperty("text", out var tp) ? tp.GetString() : null;
-                    Log.Debug($"[MapJS] {txt}");
+                    System.Diagnostics.Debug.WriteLine($"[MapJS] {txt}");
                     break;
                 case "map3dStep":
                     var step = doc.RootElement.TryGetProperty("step", out var sp) ? sp.GetString() : null;

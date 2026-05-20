@@ -77,6 +77,14 @@ See [Hotkeys](26-hotkeys.md) for the full list of defaults.
 - **Check for extension updates** — toggle.
 - **GitHub Personal Access Token** — optional. Increases the extension gallery API rate limit from 60 to 5000 requests per hour. Stored locally; never sent anywhere other than GitHub's public API.
 
+### Diagnostics
+
+- **Diagnostic logging** — toggle, off by default. When on, Novalist writes a technical log to a file you can send for support (e.g. to report a bug we cannot reproduce).
+  - **What it records:** app events, lifecycle and startup phases, settings state, panel/sidebar visibility, and errors / stack traces.
+  - **What it never records:** your story text, characters, locations, items, lore, scene or chapter titles, notes, or file names. File paths are stripped to their extension only. The log is content-safe by design so you do not have to worry about your writing being copied.
+  - **Open log folder** / **Open current log** — open the log so you can read it before sending. **Clear logs** deletes the files.
+  - Logs live in `%APPDATA%/Novalist/logs/` (Windows), `~/Library/Application Support/Novalist/logs/` (macOS), `~/.config/Novalist/logs/` (Linux), named `novalist-<date>.log` and size-rotated.
+
 ### Extension settings
 
 Each installed extension that contributes settings appears as its own category at the bottom of the Settings overlay. The category name and icon are chosen by the extension.

@@ -365,7 +365,13 @@
     "checkForExtensionUpdates": "Check for extension updates",
     "checkForExtensionUpdatesDesc": "Automatically check for extension updates on startup",
     "githubToken": "GitHub Personal Access Token",
-    "githubTokenDesc": "Optional token to increase API rate limits when browsing or updating extensions (60/hr → 5000/hr)"
+    "githubTokenDesc": "Optional token to increase API rate limits when browsing or updating extensions (60/hr → 5000/hr)",
+    "diagnostics": "DIAGNOSTICS",
+    "diagnosticLogging": "Diagnostic logging",
+    "diagnosticLoggingDesc": "Write a technical log to a file you can send for support. It records only app events, settings, and errors — never your story text, characters, locations, scenes, or file names. You can open and read the file before sending it.",
+    "openLogFolder": "Open log folder",
+    "openCurrentLog": "Open current log",
+    "clearLogs": "Clear logs"
   },
   "hotkeys": {
     "searchPlaceholder": "Filter shortcuts...",

@@ -150,6 +150,9 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private bool _isSettingsOpen;
 
+    partial void OnIsStartMenuOpenChanged(bool value) => Utilities.Log.Info($"StartMenu open={value}.");
+    partial void OnIsSettingsOpenChanged(bool value) => Utilities.Log.Info($"Settings open={value}.");
+
     [ObservableProperty]
     private int _projectTotalWords;
 
@@ -547,6 +550,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     partial void OnActiveContextTabChanged(string value)
     {
+        Utilities.Log.Info($"Sidebar tab -> '{value}'.");
         OnPropertyChanged(nameof(IsContextTabActive));
         OnPropertyChanged(nameof(IsFootnotesTabActive));
         foreach (var tab in ExtensionContextTabs)
@@ -556,11 +560,17 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private FootnotesPanelViewModel? _footnotesPanel;
 
-    partial void OnIsContextSidebarVisibleChanged(bool value) =>
+    partial void OnIsContextSidebarVisibleChanged(bool value)
+    {
+        Utilities.Log.Info($"IsContextSidebarVisible={value} -> IsContextSidebarShowing={IsContextSidebarShowing} (ContextSidebar VM {(ContextSidebar == null ? "null" : "set")}).");
         OnPropertyChanged(nameof(IsContextSidebarShowing));
+    }
 
     partial void OnActiveContentViewChanged(string value)
     {
+        // Central choke point: every dedicated-view navigation flows through here.
+        // Value is a view key (enum-like string), never user content.
+        Utilities.Log.Info($"Nav: ActiveContentView -> '{value}'.");
         OnPropertyChanged(nameof(IsContextSidebarShowing));
         UpdateContentTabActive();
         // Sync ActiveActivityView for content-typed activity buttons (Export/ImageGallery/Git).
@@ -610,8 +620,18 @@ public partial class MainWindowViewModel : ObservableObject
 
     public bool IsAppChromeVisible => IsProjectLoaded && !IsFocusMode;
 
-    partial void OnIsProjectLoadedChanged(bool value) => OnPropertyChanged(nameof(IsAppChromeVisible));
-    partial void OnIsFocusModeChanged(bool value) => OnPropertyChanged(nameof(IsAppChromeVisible));
+    partial void OnIsProjectLoadedChanged(bool value)
+    {
+        Utilities.Log.Info($"IsProjectLoaded={value}.");
+        OnPropertyChanged(nameof(IsAppChromeVisible));
+    }
+    partial void OnIsFocusModeChanged(bool value)
+    {
+        Utilities.Log.Info($"FocusMode={value}.");
+        OnPropertyChanged(nameof(IsAppChromeVisible));
+    }
+    partial void OnIsExplorerVisibleChanged(bool value) => Utilities.Log.Info($"ExplorerVisible={value}.");
+    partial void OnIsSceneNotesVisibleChanged(bool value) => Utilities.Log.Info($"SceneNotesVisible={value}.");
 
     [RelayCommand]
     private void ToggleFocusMode()
@@ -743,6 +763,8 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isExtensionsOpen;
+
+    partial void OnIsExtensionsOpenChanged(bool value) => Utilities.Log.Info($"Extensions view open={value}.");
 
     [ObservableProperty]
     private ExtensionsViewModel? _extensions;
@@ -1189,6 +1211,8 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void OnProjectLoaded(ProjectMetadata metadata, string projectPath)
     {
+        // Counts only — never project/book names or paths.
+        Utilities.Log.Info($"Project loaded: books={metadata.Books?.Count ?? 0}.");
         IsProjectLoaded = true;
         ProjectName = metadata.Name;
 
@@ -1229,6 +1253,7 @@ public partial class MainWindowViewModel : ObservableObject
         Editor.SetGrammarCheckContributors(ExtensionManager?.GrammarCheckContributors ?? []);
 
         ContextSidebar = new ContextSidebarViewModel(_projectService, _entityService);
+        Utilities.Log.Info($"ContextSidebar VM assigned. IsContextSidebarVisible={IsContextSidebarVisible}, IsContextSidebarShowing={IsContextSidebarShowing}, ActiveContextTab={ActiveContextTab}, ActiveContentView={ActiveContentView}.");
         ContextSidebar.EntityOpenRequested += OnEntityOpenRequested;
         ContextSidebar.AttachEditor(Editor);
         _ = ContextSidebar.RefreshEntityDataAsync();
@@ -2329,6 +2354,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void CloseProject()
     {
+        Utilities.Log.Info("Project closed.");
         IsStartMenuOpen = false;
         IsProjectLoaded = false;
         IsDashboardOpen = false;
@@ -2709,6 +2735,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     private async Task SwitchBookCoreAsync(string bookId)
     {
+        Utilities.Log.Info($"Switch book id={bookId}.");
         // Save current work
         if (Editor?.IsDirty == true)
             await Editor.SaveAsync();

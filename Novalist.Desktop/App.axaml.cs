@@ -76,10 +76,39 @@ public partial class App : Application
         return "en";
     }
 
+    /// <summary>
+    /// Quick synchronous read of the diagnostic-logging flag so file logging can
+    /// be enabled before the async settings load completes, capturing startup.
+    /// </summary>
+    internal static bool ReadDiagnosticLoggingFromSettings()
+    {
+        try
+        {
+            var settingsPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "Novalist", "settings.json");
+            if (File.Exists(settingsPath))
+            {
+                var json = File.ReadAllText(settingsPath);
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("diagnosticLoggingEnabled", out var prop))
+                    return prop.ValueKind == JsonValueKind.True;
+            }
+        }
+        catch { /* default off */ }
+        return false;
+    }
+
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            // Enable the diagnostic file log as early as possible (synchronous
+            // settings read, like the language read below) so startup itself is
+            // captured when the user has opted in.
+            Utilities.Log.EnableFileLogging(ReadDiagnosticLoggingFromSettings());
+            Utilities.Log.Info("App.OnFrameworkInitializationCompleted: startup begin.");
+
             // Initialize localization with the saved language BEFORE any UI is
             // created so the splash window picks up the correct strings.
             var localesDir = GetLocalesDirectory();
@@ -96,6 +125,7 @@ public partial class App : Application
             Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (_, e) =>
             {
                 Program.LogCrash("Dispatcher.UnhandledException", e.Exception);
+                Utilities.Log.Error("Dispatcher.UnhandledException", e.Exception);
                 e.Handled = true;
             };
 
@@ -123,6 +153,29 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    /// <summary>
+    /// Logs the installed extensions and their package metadata (id, name,
+    /// version, author, enabled/loaded state). This is extension developer /
+    /// package info, not the user's story content, so it is safe to log in full
+    /// — it tells us exactly which third-party code is running when diagnosing a
+    /// report. Repository URLs are not in the manifest (they live in the gallery
+    /// listing), so they are not available here.
+    /// </summary>
+    private static void LogActiveExtensions()
+    {
+        var exts = ExtensionManager.Extensions;
+        Utilities.Log.Info($"Extensions: {exts.Count} installed.");
+        foreach (var e in exts)
+        {
+            var m = e.Manifest;
+            var author = string.IsNullOrWhiteSpace(m.Author) ? "?" : m.Author;
+            var version = string.IsNullOrWhiteSpace(m.Version) ? "?" : m.Version;
+            var status = e.IsLoaded ? "loaded" : (e.LoadError != null ? "error" : "not-loaded");
+            Utilities.Log.Info(
+                $"  ext id={m.Id} name=\"{m.Name}\" v{version} by \"{author}\" enabled={e.IsEnabled} status={status}");
+        }
     }
 
     private static void StartNormal(IClassicDesktopStyleApplicationLifetime desktop)
@@ -196,6 +249,7 @@ public partial class App : Application
                 hostServices.WizardLauncher = (def, seed) => mainWindow.RunWizardForExtensionAsync(def, seed);
                 mainWindow.WireExtensionBusyProgress(hostServices);
                 await ExtensionManager.LoadAllAsync();
+                LogActiveExtensions();
 
                 // Initialize gallery service
                 var galleryService = new Novalist.Core.Services.ExtensionGalleryService();

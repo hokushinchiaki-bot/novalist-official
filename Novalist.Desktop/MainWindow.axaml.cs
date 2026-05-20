@@ -193,7 +193,11 @@ public partial class MainWindow : Window
     private void ToggleContextSidebarColumn(bool visible)
     {
         var grid = this.FindControl<Grid>("OuterContentGrid");
-        if (grid == null || grid.ColumnDefinitions.Count < 3) return;
+        if (grid == null || grid.ColumnDefinitions.Count < 3)
+        {
+            Novalist.Desktop.Utilities.Log.Warn($"ToggleContextSidebarColumn({visible}): OuterContentGrid not found or has <3 columns.");
+            return;
+        }
         var col = grid.ColumnDefinitions[2];
 
         if (visible)
@@ -209,6 +213,8 @@ public partial class MainWindow : Window
             col.MaxWidth = 0;
             col.Width = new GridLength(0);
         }
+
+        Novalist.Desktop.Utilities.Log.Info($"ToggleContextSidebarColumn({visible}): col width={col.Width}, min={col.MinWidth}, max={col.MaxWidth}.");
     }
 
     private GridLength _savedExtRightSidebarWidth = new(320);
@@ -1011,6 +1017,8 @@ public partial class MainWindow : Window
         var dialogOverlay = this.FindControl<Border>("DialogOverlay")!;
         var presenter = this.FindControl<ContentPresenter>("DialogHostPresenter")!;
 
+        var dialogName = dialog.GetType().Name;
+        Novalist.Desktop.Utilities.Log.Info($"Dialog opened: {dialogName}.");
         _isDialogOpen = true;
         UpdateWebViewVisibility();
 
@@ -1026,6 +1034,7 @@ public partial class MainWindow : Window
 
         _isDialogOpen = false;
         UpdateWebViewVisibility();
+        Novalist.Desktop.Utilities.Log.Info($"Dialog closed: {dialogName}.");
     }
 
     private async Task<Novalist.Core.Models.SmartList?> ShowSmartListEditorAsync(Novalist.Core.Models.SmartList? source)

@@ -207,6 +207,7 @@ public partial class ExtensionItemViewModel : ObservableObject
 
         try
         {
+            Log.Info($"Extension {(value ? "enable" : "disable")}: id={Id}.");
             if (value)
                 await _manager.EnableExtensionAsync(Id);
             else

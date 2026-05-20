@@ -44,6 +44,7 @@ public partial class SettingsView : UserControl
             ["templates"] = SectionTemplates,
             ["hotkeys"] = SectionHotkeys,
             ["updatesIntegrations"] = SectionUpdatesIntegrations,
+            ["diagnostics"] = SectionDiagnostics,
         };
 
         if (key.StartsWith("ext_", StringComparison.Ordinal))

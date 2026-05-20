@@ -133,6 +133,7 @@ public partial class CommandPaletteDialog : UserControl
     {
         if (ResultsList.SelectedItem is not CommandPaletteItem item) return;
         DialogClosed.TrySetResult();
+        Novalist.Desktop.Utilities.Log.Info($"CommandPalette: {item.Descriptor.ActionId}.");
         // Defer execution so dialog overlay closes first; otherwise commands
         // that open another overlay may compete with us.
         Dispatcher.UIThread.Post(() =>

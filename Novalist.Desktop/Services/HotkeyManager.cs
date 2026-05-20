@@ -56,6 +56,8 @@ public sealed class HotkeyManager
             if (descriptor.CanExecute != null && !descriptor.CanExecute())
                 continue;
 
+            // ActionId is a stable command key (e.g. "app.nav.dashboard"), not user content.
+            Novalist.Desktop.Utilities.Log.Info($"Hotkey: {descriptor.ActionId} ({gestureStr}).");
             descriptor.OnExecute?.Invoke();
             return true;
         }

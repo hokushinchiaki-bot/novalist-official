@@ -811,6 +811,43 @@
                     <Border Height="1" Background="{DynamicResource RibbonGroupBorder}" Margin="0,8,0,0" />
                 </StackPanel>
 
+                <!-- ── Diagnostics Section ── -->
+                <StackPanel x:Name="SectionDiagnostics" Spacing="{StaticResource SpacingXL}"
+                            IsVisible="{Binding IsDiagnosticsSectionVisible}">
+                    <TextBlock Text="{loc:Loc settings.diagnostics}"
+                               FontSize="{StaticResource FontSizeBodySmall}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource SubtleText}"
+                               LetterSpacing="1" />
+
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Left" Spacing="{StaticResource SpacingTightest}" Width="360">
+                            <TextBlock Text="{loc:Loc settings.diagnosticLogging}"
+                                       Foreground="{DynamicResource NormalText}"
+                                       FontSize="{StaticResource FontSizeBodyLarge}" />
+                            <TextBlock Text="{loc:Loc settings.diagnosticLoggingDesc}"
+                                       Foreground="{DynamicResource SubtleText}"
+                                       FontSize="{StaticResource FontSizeBodySmall}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch IsChecked="{Binding DiagnosticLoggingEnabled}"
+                                      HorizontalAlignment="Right"
+                                      OnContent=""
+                                      OffContent="" />
+                    </DockPanel>
+
+                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpacingMedium}">
+                        <Button Content="{loc:Loc settings.openLogFolder}"
+                                Command="{Binding OpenLogFolderCommand}" />
+                        <Button Content="{loc:Loc settings.openCurrentLog}"
+                                Command="{Binding OpenCurrentLogCommand}" />
+                        <Button Content="{loc:Loc settings.clearLogs}"
+                                Command="{Binding ClearLogsCommand}" />
+                    </StackPanel>
+
+                    <Border Height="1" Background="{DynamicResource RibbonGroupBorder}" Margin="0,8,0,0" />
+                </StackPanel>
+
                 <!-- ── Extension Settings Sections ── -->
                 <ItemsControl x:Name="SectionExtensions" ItemsSource="{Binding ExtensionSettingsPages}">
                     <ItemsControl.ItemTemplate>

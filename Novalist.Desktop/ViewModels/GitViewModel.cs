@@ -123,6 +123,8 @@ public partial class GitViewModel : ObservableObject
         IsLoading = true;
         HasError = false;
 
+        // File count only — never paths or the commit message text.
+        Novalist.Desktop.Utilities.Log.Info($"Git commit (selected): files={staged.Count}.");
         var error = await _gitService.CommitAsync(staged, CommitMessage.Trim());
         if (error != null)
         {
@@ -149,6 +151,7 @@ public partial class GitViewModel : ObservableObject
         HasError = false;
 
         var allPaths = ChangedFiles.Select(f => f.RelativePath).ToList();
+        Novalist.Desktop.Utilities.Log.Info($"Git commit (all): files={allPaths.Count}.");
         var error = await _gitService.CommitAsync(allPaths, CommitMessage.Trim());
         if (error != null)
         {
@@ -175,6 +178,7 @@ public partial class GitViewModel : ObservableObject
         HasError = false;
 
         var error = await _gitService.PushAsync();
+        Novalist.Desktop.Utilities.Log.Info($"Git push: success={error == null}.");
         if (error != null)
         {
             HasError = true;
@@ -201,6 +205,7 @@ public partial class GitViewModel : ObservableObject
         HasError = false;
 
         var error = await _gitService.PullAsync();
+        Novalist.Desktop.Utilities.Log.Info($"Git pull: success={error == null}.");
         if (error != null)
         {
             HasError = true;

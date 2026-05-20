@@ -39,10 +39,15 @@ class Program
         }
 
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
-            LogCrash("AppDomain.UnhandledException", e.ExceptionObject as Exception);
+        {
+            var ex = e.ExceptionObject as Exception;
+            LogCrash("AppDomain.UnhandledException", ex);
+            Utilities.Log.Error("AppDomain.UnhandledException", ex);
+        };
         TaskScheduler.UnobservedTaskException += (_, e) =>
         {
             LogCrash("TaskScheduler.UnobservedTaskException", e.Exception);
+            Utilities.Log.Error("TaskScheduler.UnobservedTaskException", e.Exception);
             e.SetObserved();
         };
 

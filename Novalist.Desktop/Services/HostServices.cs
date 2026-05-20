@@ -264,7 +264,8 @@ public sealed class HostServices : IHostServices, IExtensionFileService, IExtens
             ChapterTitle = chapterTitle, WordCount = wordCount
         };
         _currentScene = info;
-        Log.Debug($"[HostServices] RaiseSceneOpened id={id} title={title} subscribers={SceneOpened?.GetInvocationList().Length ?? 0}");
+        // Do not log the scene title — it is story content. id is a non-content identifier.
+        Log.Debug($"[HostServices] RaiseSceneOpened id={id} subscribers={SceneOpened?.GetInvocationList().Length ?? 0}");
         SceneOpened?.Invoke(info);
     }
 

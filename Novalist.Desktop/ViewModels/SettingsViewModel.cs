@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media;
@@ -42,6 +44,7 @@ public partial class SettingsViewModel : ObservableObject
         new("templates", "settings.templates"),
         new("hotkeys", "settings.hotkeys"),
         new("updatesIntegrations", "settings.updatesIntegrations"),
+        new("diagnostics", "settings.diagnostics"),
     ];
 
     [ObservableProperty] private bool _isAppearanceSectionVisible = true;
@@ -51,6 +54,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _isTemplatesSectionVisible = true;
     [ObservableProperty] private bool _isHotkeysSectionVisible = true;
     [ObservableProperty] private bool _isUpdatesIntegrationsSectionVisible = true;
+    [ObservableProperty] private bool _isDiagnosticsSectionVisible = true;
 
     public HotkeySettingsViewModel HotkeySettings { get; } = new(App.HotkeyService);
 
@@ -101,6 +105,7 @@ public partial class SettingsViewModel : ObservableObject
             IsTemplatesSectionVisible = true;
             IsHotkeysSectionVisible = true;
             IsUpdatesIntegrationsSectionVisible = true;
+            IsDiagnosticsSectionVisible = true;
             return;
         }
 
@@ -127,6 +132,8 @@ public partial class SettingsViewModel : ObservableObject
             "extension", "github", "token", "pat", "integration",
             Loc.T("settings.updatesIntegrations"), Loc.T("update.checkForUpdates"), Loc.T("update.checkForUpdatesDesc"),
             Loc.T("settings.checkForExtensionUpdates"), Loc.T("settings.githubToken"));
+        IsDiagnosticsSectionVisible = MatchesSection(q, "log", "logging", "diagnostic", "diagnostics", "support", "protokoll", "diagnose",
+            Loc.T("settings.diagnostics"), Loc.T("settings.diagnosticLogging"), Loc.T("settings.diagnosticLoggingDesc"));
     }
 
     private static bool MatchesSection(string query, params string[] terms)
@@ -236,6 +243,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool _checkForUpdates;
     [ObservableProperty] private bool _checkForExtensionUpdates;
     [ObservableProperty] private string _githubToken = string.Empty;
+    [ObservableProperty] private bool _diagnosticLoggingEnabled;
 
     public Func<TemplateEditorViewModel, Task<bool>>? ShowTemplateEditor { get; set; }
 
@@ -294,6 +302,7 @@ public partial class SettingsViewModel : ObservableObject
         _checkForUpdates = Settings.CheckForUpdates;
         _checkForExtensionUpdates = Settings.CheckForExtensionUpdates;
         _githubToken = Settings.GitHubToken ?? string.Empty;
+        _diagnosticLoggingEnabled = Settings.DiagnosticLoggingEnabled;
 
         _selectedCategory = Categories[0];
     }
@@ -313,6 +322,14 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnGithubTokenChanged(string value)
     {
         Settings.GitHubToken = string.IsNullOrWhiteSpace(value) ? null : value;
+        SaveAndNotify();
+    }
+
+    partial void OnDiagnosticLoggingEnabledChanged(bool value)
+    {
+        Settings.DiagnosticLoggingEnabled = value;
+        Log.EnableFileLogging(value);
+        Log.Info($"Diagnostic logging {(value ? "enabled" : "disabled")} by user.");
         SaveAndNotify();
     }
 
@@ -772,6 +789,49 @@ public partial class SettingsViewModel : ObservableObject
     private void Close()
     {
         CloseRequested?.Invoke();
+    }
+
+    // ── Diagnostics ─────────────────────────────────────────────────
+
+    [RelayCommand]
+    private void OpenLogFolder()
+    {
+        try
+        {
+            Directory.CreateDirectory(Log.LogDirectory);
+            OpenInShell(Log.LogDirectory);
+        }
+        catch (Exception ex) { Log.Error("OpenLogFolder failed.", ex); }
+    }
+
+    [RelayCommand]
+    private void OpenCurrentLog()
+    {
+        try
+        {
+            var path = Log.CurrentLogPath;
+            if (File.Exists(path))
+                OpenInShell(path);
+            else
+                OpenInShell(Log.LogDirectory);
+        }
+        catch (Exception ex) { Log.Error("OpenCurrentLog failed.", ex); }
+    }
+
+    [RelayCommand]
+    private void ClearLogs()
+    {
+        try { Log.ClearLogFiles(); }
+        catch (Exception ex) { Log.Error("ClearLogs failed.", ex); }
+    }
+
+    private static void OpenInShell(string path)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = path,
+            UseShellExecute = true
+        });
     }
 
     private void UpdatePreview()

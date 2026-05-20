@@ -350,6 +350,8 @@ public partial class EditorViewModel : ObservableObject
     /// </summary>
     public async Task OpenSceneAsync(ChapterData chapter, SceneData scene)
     {
+        // Ids only — never scene/chapter titles (story content).
+        Utilities.Log.Info($"Open scene id={scene.Id} chapter={chapter.Guid} (open tabs={OpenScenes.Count}).");
         // Existing tab? Just switch to it.
         var existing = OpenScenes.FirstOrDefault(t => string.Equals(t.Scene.Id, scene.Id, StringComparison.OrdinalIgnoreCase));
         if (existing != null)

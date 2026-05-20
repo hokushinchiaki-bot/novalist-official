@@ -267,7 +267,13 @@
     "aiResetPrompt": "Zurücksetzen",
     "hotkeys": "TASTENKÜRZEL",
     "updatesIntegrations": "UPDATES & INTEGRATIONEN",
-    "general": "ALLGEMEIN"
+    "general": "ALLGEMEIN",
+    "diagnostics": "DIAGNOSE",
+    "diagnosticLogging": "Diagnoseprotokoll",
+    "diagnosticLoggingDesc": "Schreibt ein technisches Protokoll in eine Datei, die du zur Unterstützung senden kannst. Es erfasst nur App-Ereignisse, Einstellungen und Fehler — niemals deinen Text, Charaktere, Orte, Szenen oder Dateinamen. Du kannst die Datei vor dem Senden öffnen und lesen.",
+    "openLogFolder": "Protokollordner öffnen",
+    "openCurrentLog": "Aktuelles Protokoll öffnen",
+    "clearLogs": "Protokolle löschen"
   },
   "hotkeys": {
     "searchPlaceholder": "Tastenkürzel filtern...",

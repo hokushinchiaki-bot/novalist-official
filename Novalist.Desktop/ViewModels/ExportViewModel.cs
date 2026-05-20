@@ -233,6 +233,8 @@ public partial class ExportViewModel : ObservableObject
 
         IsExporting = true;
         StatusMessage = Loc.T("export.exporting");
+        // Format/extension + count only — never filename, title, or path.
+        Utilities.Log.Info($"Export start: ext={FileExtension}, items={SelectedCount}, extensionFormat={IsExtensionFormat}, codex={IsCodexFormat}.");
 
         try
         {

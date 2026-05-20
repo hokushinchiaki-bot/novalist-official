@@ -111,6 +111,14 @@ public class AppSettings
     [JsonPropertyName("hotkeyBindings")]
     public Dictionary<string, string> HotkeyBindings { get; set; } = new(StringComparer.Ordinal);
 
+    /// <summary>
+    /// When true, the app writes a content-safe diagnostic log to
+    /// %APPDATA%/Novalist/logs so users can send it for support. Never records
+    /// story content. Default off.
+    /// </summary>
+    [JsonPropertyName("diagnosticLoggingEnabled")]
+    public bool DiagnosticLoggingEnabled { get; set; }
+
     [JsonPropertyName("checkForUpdates")]
     public bool CheckForUpdates { get; set; } = true;
 
