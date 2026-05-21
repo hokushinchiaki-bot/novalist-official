@@ -40,6 +40,14 @@ public class ProjectSettings
     [JsonPropertyName("calendarAnchor")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? CalendarAnchor { get; set; }
+
+    /// <summary>
+    /// Watch the active draft folder for external file changes (add / move / rename / delete
+    /// of scenes + chapters) and reconcile them live. Default on; can be turned off for flaky
+    /// network / cloud drives where the watcher misbehaves.
+    /// </summary>
+    [JsonPropertyName("watchFilesystem")]
+    public bool WatchFilesystem { get; set; } = true;
 }
 
 public class ProjectViewState

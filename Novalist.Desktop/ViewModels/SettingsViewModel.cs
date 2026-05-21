@@ -218,6 +218,9 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _projectAuthor = string.Empty;
 
+    [ObservableProperty]
+    private bool _watchFilesystem = true;
+
     public List<string> AvailableLanguages { get; } = AutoReplacementDefaults.AvailableLanguages;
     public List<UiLanguageItem> AvailableUiLanguages { get; }
     public string CurrentProjectName => _projectService.CurrentProject?.Name ?? string.Empty;
@@ -453,6 +456,7 @@ public partial class SettingsViewModel : ObservableObject
         _projectWordGoal = ActiveProjectGoals?.ProjectGoal ?? 50000;
         _projectDeadline = ActiveProjectGoals?.Deadline ?? string.Empty;
         _projectAuthor = _projectService.ProjectSettings?.Author ?? string.Empty;
+        _watchFilesystem = _projectService.ProjectSettings?.WatchFilesystem ?? true;
 
         AvailableUiLanguages = Loc.Instance.GetAvailableLanguages()
             .Select(code => new UiLanguageItem(code, Loc.Instance.GetLanguageDisplayName(code)))
@@ -680,6 +684,13 @@ public partial class SettingsViewModel : ObservableObject
     {
         if (_projectService.ProjectSettings == null) return;
         _projectService.ProjectSettings.Author = value ?? string.Empty;
+        SaveProjectSettingsAndNotify();
+    }
+
+    partial void OnWatchFilesystemChanged(bool value)
+    {
+        if (_projectService.ProjectSettings == null) return;
+        _projectService.ProjectSettings.WatchFilesystem = value;
         SaveProjectSettingsAndNotify();
     }
 

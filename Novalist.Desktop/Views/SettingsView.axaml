@@ -468,6 +468,23 @@
                                  HorizontalAlignment="Right" />
                     </DockPanel>
 
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Left" Spacing="{StaticResource SpacingTightest}" Width="360">
+                            <TextBlock Text="{loc:Loc settings.watchFilesystem}"
+                                       Foreground="{DynamicResource NormalText}"
+                                       FontSize="{StaticResource FontSizeBodyLarge}" />
+                            <TextBlock Text="{loc:Loc settings.watchFilesystemDesc}"
+                                       Foreground="{DynamicResource SubtleText}"
+                                       FontSize="{StaticResource FontSizeBodySmall}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch IsChecked="{Binding WatchFilesystem}"
+                                      IsEnabled="{Binding CanUseProjectScope}"
+                                      HorizontalAlignment="Right"
+                                      OnContent=""
+                                      OffContent="" />
+                    </DockPanel>
+
                     <Border Height="1" Background="{DynamicResource RibbonGroupBorder}" Margin="0,8,0,0" />
                 </StackPanel>
 

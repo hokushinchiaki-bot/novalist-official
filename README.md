@@ -52,6 +52,7 @@ For extension authors, the [Extension Guide](docs/extension-guide.md) walks thro
 - Chapters with status tracking (Outline → First Draft → Revised → Edited → Final), optional acts, optional in-world date ranges, label colors, and favorites.
 - Scenes with synopsis, notes, label color, plotline membership, in-world date range, POV / emotion / intensity / conflict / tags (auto-detected with manual overrides).
 - **Smart Lists** — saved scene queries by status, POV, tag, or plotline.
+- **Filesystem is the source of truth** — add, move, rename, or delete scenes and chapters with any file manager and Novalist reconciles the changes, both on open and live while running. Scene identity travels in a one-line comment in each file; chapter identity in a hidden folder marker.
 
 ### Worldbuilding (Codex)
 

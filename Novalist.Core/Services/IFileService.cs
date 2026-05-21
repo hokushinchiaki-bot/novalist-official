@@ -15,6 +15,13 @@ public interface IFileService
     Task DeleteFileAsync(string path);
     Task DeleteDirectoryAsync(string path, bool recursive = true);
     Task MoveFileAsync(string oldPath, string newPath);
+
+    /// <summary>Size of the file in bytes. Used by the draft-index re-hash fast-path.</summary>
+    Task<long> GetFileSizeAsync(string path);
+
+    /// <summary>Last write time of the file in UTC. Used by the draft-index re-hash fast-path.</summary>
+    Task<DateTime> GetLastWriteTimeUtcAsync(string path);
+
     string CombinePath(params string[] parts);
     string GetFileName(string path);
     string GetFileNameWithoutExtension(string path);

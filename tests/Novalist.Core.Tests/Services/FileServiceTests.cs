@@ -27,6 +27,27 @@ public class FileServiceTests
     }
 
     [Fact]
+    public async Task GetFileSizeAsync_ReturnsByteLength()
+    {
+        using var dir = new TempDir();
+        var path = dir.Combine("a.txt");
+        await _sut.WriteTextAsync(path, "hello"); // 5 ASCII bytes
+        Assert.Equal(5, await _sut.GetFileSizeAsync(path));
+    }
+
+    [Fact]
+    public async Task GetLastWriteTimeUtcAsync_ReflectsWrite()
+    {
+        using var dir = new TempDir();
+        var path = dir.Combine("a.txt");
+        var before = DateTime.UtcNow.AddSeconds(-2);
+        await _sut.WriteTextAsync(path, "x");
+        var mtime = await _sut.GetLastWriteTimeUtcAsync(path);
+        Assert.True(mtime >= before);
+        Assert.Equal(DateTimeKind.Utc, mtime.Kind);
+    }
+
+    [Fact]
     public async Task ExistsAsync_TrueThenFalse()
     {
         using var dir = new TempDir();

@@ -108,6 +108,7 @@ A small set of settings are project-scoped rather than app-scoped, stored in `<P
 
 - **Author name** for exports.
 - **Project default templates** (when distinct from the global ones).
+- **Watch filesystem** — toggle, on by default. When on, Novalist watches the active draft folder and reconciles scenes/chapters you add, move, rename, or delete with a file manager while the app is open. Turn it off on flaky network or cloud drives where the watcher misbehaves; reconciliation still runs when you open the project. See [Editing your project outside Novalist](03-projects-and-books.md#editing-your-project-outside-novalist).
 
 ## Where settings live
 

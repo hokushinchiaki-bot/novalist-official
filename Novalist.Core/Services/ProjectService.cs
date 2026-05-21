@@ -34,6 +34,18 @@ public partial class ProjectService : IProjectService
         : null;
     public bool IsProjectLoaded => CurrentProject != null && ActiveBook != null && ProjectRoot != null;
 
+    /// <summary>
+    /// Optional sink for v2 to v3 filesystem-migration progress, set by the UI before
+    /// <see cref="LoadProjectAsync"/> so it can show a progress overlay. Null = no reporting.
+    /// </summary>
+    public IProgress<FilesystemMigrationProgress>? MigrationProgress { get; set; }
+
+    /// <summary>
+    /// Raised after <see cref="ReconcileActiveDraftAsync"/> detects external changes (on load or
+    /// from the live watcher) so the UI can refresh + surface a summary. Carries the report.
+    /// </summary>
+    public event EventHandler<ReconciliationReport>? DraftReconciled;
+
     public ProjectService(IFileService fileService)
     {
         _fileService = fileService;
@@ -70,7 +82,9 @@ public partial class ProjectService : IProjectService
             Name = projectName,
             CreatedAt = DateTime.UtcNow,
             ActiveBookId = bookId,
-            Books = [book]
+            Books = [book],
+            // Born at the current schema version — no migration needed on first load.
+            Version = FilesystemMigrator.FilesystemVersion,
         };
 
         // Create project-level folders
@@ -127,6 +141,18 @@ public partial class ProjectService : IProjectService
             ActiveBook = prevActive;
         }
 
+        // Filesystem-source-of-truth migration (v2 -> v3): stamp every scene file with
+        // its id, write a .nvchapter.json marker per chapter folder, split acts.json, and
+        // build the per-draft .nvindex.json. Runs for every draft of every book so the
+        // whole project becomes reconcilable, not just the active draft. Idempotent.
+        var migrator = new FilesystemMigrator(_fileService);
+        if (await migrator.NeedsMigrationAsync(metadata, projectDirectory))
+        {
+            await migrator.MigrateAsync(metadata, projectDirectory, MigrationProgress);
+            // Persist the version bump without flushing the not-yet-loaded draft data.
+            await WriteProjectJsonAsync();
+        }
+
         // Load the active draft's chapters/acts from draft.json (if present).
         await LoadActiveDraftDataAsync();
 
@@ -136,7 +162,48 @@ public partial class ProjectService : IProjectService
         // Load project-level settings
         await LoadProjectSettingsAsync();
 
+        // Reconcile the active draft against external filesystem edits made while the app was
+        // closed (added / moved / renamed / deleted scenes + chapters). Auto-applies; the UI
+        // surfaces the summary. A clean project produces no changes and no writes.
+        await ReconcileActiveDraftAsync();
+
         return metadata;
+    }
+
+    /// <summary>
+    /// Scans the active draft's on-disk tree and, when <paramref name="apply"/> is set and the
+    /// scan found changes, reconciles the in-memory chapter/scene model + persists. Returns the
+    /// report so callers can surface a summary. Safe to call on a clean project (no-op).
+    /// </summary>
+    public async Task<ReconciliationReport> ReconcileActiveDraftAsync(bool apply = true)
+    {
+        if (ActiveBook == null || ActiveDraftRoot == null || ScenesManifest == null)
+            return new ReconciliationReport();
+
+        var index = await LoadDraftIndexAsync();
+        var reconciler = new ProjectReconciler(_fileService);
+        var report = await reconciler.ScanAsync(ActiveDraftRoot, ActiveBook.ChapterFolder, ActiveBook.Chapters, ScenesManifest, index);
+
+        if (apply && report.HasChanges)
+        {
+            await reconciler.ApplyAsync(ActiveDraftRoot, ActiveBook.ChapterFolder, ActiveBook.Chapters, ScenesManifest, index);
+            await SaveActiveDraftDataAsync();   // draft.json + refreshed chapter markers
+            await SaveScenesAsync();
+        }
+
+        if (report.HasChanges)
+            DraftReconciled?.Invoke(this, report);
+
+        return report;
+    }
+
+    private async Task<DraftIndex> LoadDraftIndexAsync()
+    {
+        if (ActiveDraftRoot == null) return new DraftIndex();
+        var path = _fileService.CombinePath(ActiveDraftRoot, ".nvindex.json");
+        if (!await _fileService.ExistsAsync(path)) return new DraftIndex();
+        var json = await _fileService.ReadTextAsync(path);
+        return JsonSerializer.Deserialize<DraftIndex>(json, JsonOptions) ?? new DraftIndex();
     }
 
     public async Task SaveProjectAsync()
@@ -145,6 +212,18 @@ public partial class ProjectService : IProjectService
 
         // Persist the active draft's chapter / act tree into draft.json.
         await SaveActiveDraftDataAsync();
+        await WriteProjectJsonAsync();
+    }
+
+    /// <summary>
+    /// Serializes <c>project.json</c> only (no draft.json flush). Used by the v3
+    /// filesystem migration to persist the version bump before the active draft's data
+    /// has been loaded — calling the full <see cref="SaveProjectAsync"/> there would write
+    /// an empty draft.json over real chapter data.
+    /// </summary>
+    private async Task WriteProjectJsonAsync()
+    {
+        if (CurrentProject == null || ProjectRoot == null) return;
 
         // Temporarily clear chapters + acts on books that have multi-draft
         // storage so project.json doesn't duplicate the data.
@@ -528,7 +607,8 @@ public partial class ProjectService : IProjectService
         scenes.Add(scene);
 
         var scenePath = GetSceneFilePath(chapter, scene);
-        await _fileService.WriteTextAsync(scenePath, string.Empty);
+        // Born stamped with its identity front-matter (empty body).
+        await _fileService.WriteTextAsync(scenePath, FileFrontMatter.Build(scene.Id));
 
         await SaveScenesAsync();
 
@@ -869,7 +949,7 @@ public partial class ProjectService : IProjectService
     {
         var path = GetArchivedSceneFilePath(scene);
         if (await _fileService.ExistsAsync(path))
-            return await _fileService.ReadTextAsync(path);
+            return FileFrontMatter.Strip(await _fileService.ReadTextAsync(path));
         return string.Empty;
     }
 
@@ -1064,14 +1144,18 @@ public partial class ProjectService : IProjectService
     {
         var path = GetSceneFilePath(chapter, scene);
         if (await _fileService.ExistsAsync(path))
-            return await _fileService.ReadTextAsync(path);
+            return FileFrontMatter.Strip(await _fileService.ReadTextAsync(path));
         return string.Empty;
     }
 
     public async Task WriteSceneContentAsync(ChapterData chapter, SceneData scene, string content)
     {
         var path = GetSceneFilePath(chapter, scene);
-        await _fileService.WriteTextAsync(path, content);
+        // Re-stamp the identity front-matter: strip any echoed-back marker, then prepend the
+        // canonical one. Keeps the scene's id durable across every save without leaking the
+        // comment into the editor's content.
+        var stamped = FileFrontMatter.Stamp(FileFrontMatter.Strip(content), scene.Id);
+        await _fileService.WriteTextAsync(path, stamped);
     }
 
     public List<ChapterData> GetChaptersOrdered()
@@ -1277,6 +1361,26 @@ public partial class ProjectService : IProjectService
             Acts = ActiveBook.Acts,
         };
         await _fileService.WriteTextAsync(path, JsonSerializer.Serialize(data, JsonOptions));
+
+        await WriteChapterMarkersAsync();
+    }
+
+    /// <summary>
+    /// Refreshes the <c>.nvchapter.json</c> marker in every active-draft chapter folder so
+    /// the on-disk identity stays the source of truth after any chapter edit (create,
+    /// rename, reorder, status/date change). Cheap and centralised — every chapter mutation
+    /// flows through <see cref="SaveActiveDraftDataAsync"/>.
+    /// </summary>
+    private async Task WriteChapterMarkersAsync()
+    {
+        if (ActiveBook == null) return;
+        foreach (var chapter in ActiveBook.Chapters)
+        {
+            var folder = GetChapterFolderPath(chapter);
+            await _fileService.CreateDirectoryAsync(folder);
+            var markerPath = _fileService.CombinePath(folder, ChapterMarker.FileName);
+            await _fileService.WriteTextAsync(markerPath, JsonSerializer.Serialize(ChapterMarker.FromChapter(chapter), JsonOptions));
+        }
     }
 
     // Best-effort cleanup of a now-empty legacy folder. Excluded from coverage:

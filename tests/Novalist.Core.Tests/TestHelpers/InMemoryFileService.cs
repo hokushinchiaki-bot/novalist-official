@@ -10,6 +10,7 @@ public sealed class InMemoryFileService : IFileService
 {
     public readonly Dictionary<string, string> Files = new(StringComparer.OrdinalIgnoreCase);
     public readonly HashSet<string> Dirs = new(StringComparer.OrdinalIgnoreCase);
+    public readonly Dictionary<string, DateTime> Mtimes = new(StringComparer.OrdinalIgnoreCase);
 
     public Task<string> ReadTextAsync(string path)
         => Files.TryGetValue(path, out var v) ? Task.FromResult(v) : throw new FileNotFoundException(path);
@@ -17,6 +18,7 @@ public sealed class InMemoryFileService : IFileService
     public Task WriteTextAsync(string path, string content)
     {
         Files[path] = content;
+        Mtimes[path] = DateTime.UtcNow;
         return Task.CompletedTask;
     }
 
@@ -49,9 +51,22 @@ public sealed class InMemoryFileService : IFileService
 
     public Task MoveFileAsync(string oldPath, string newPath)
     {
-        if (Files.Remove(oldPath, out var v)) Files[newPath] = v;
+        if (Files.Remove(oldPath, out var v))
+        {
+            Files[newPath] = v;
+            Mtimes.Remove(oldPath, out var t);
+            Mtimes[newPath] = t == default ? DateTime.UtcNow : t;
+        }
         return Task.CompletedTask;
     }
+
+    public Task<long> GetFileSizeAsync(string path)
+        => Files.TryGetValue(path, out var v)
+            ? Task.FromResult((long)System.Text.Encoding.UTF8.GetByteCount(v))
+            : throw new FileNotFoundException(path);
+
+    public Task<DateTime> GetLastWriteTimeUtcAsync(string path)
+        => Mtimes.TryGetValue(path, out var t) ? Task.FromResult(t) : throw new FileNotFoundException(path);
 
     public string CombinePath(params string[] parts) => Path.Combine(parts);
     public string GetFileName(string path) => Path.GetFileName(path);

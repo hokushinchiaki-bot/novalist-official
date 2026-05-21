@@ -73,6 +73,12 @@ public class FileService : IFileService
         return Task.CompletedTask;
     }
 
+    public Task<long> GetFileSizeAsync(string path)
+        => Task.FromResult(new FileInfo(path).Length);
+
+    public Task<DateTime> GetLastWriteTimeUtcAsync(string path)
+        => Task.FromResult(File.GetLastWriteTimeUtc(path));
+
     public string CombinePath(params string[] parts) => Path.Combine(parts);
     public string GetFileName(string path) => Path.GetFileName(path);
     public string GetFileNameWithoutExtension(string path) => Path.GetFileNameWithoutExtension(path);

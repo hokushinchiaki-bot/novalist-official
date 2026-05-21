@@ -53,7 +53,7 @@ Right-click a recent project card to remove it from the list.
 
 ## The folder layout
 
-This is the on-disk shape of a project. **Do not edit JSON files by hand while the app is running** — Novalist holds them in memory and will overwrite your changes on the next save. You can safely edit scene `.html` files in any editor when Novalist is closed.
+This is the on-disk shape of a project. **Do not edit the `.json` cache files by hand while the app is running** — Novalist holds them in memory and will overwrite your changes on the next save. Scene and chapter *structure*, however, is safe to rearrange with a file manager — see [Editing your project outside Novalist](#editing-your-project-outside-novalist) below.
 
 ```
 <Project name>/
@@ -91,6 +91,35 @@ This is the on-disk shape of a project. **Do not edit JSON files by hand while t
 ```
 
 The folder names inside a book (`Chapters`, `Characters`, etc.) are configurable per book — see `BookData` for details — but the defaults shown above are what you get from a fresh project.
+
+## Editing your project outside Novalist
+
+The filesystem is the source of truth for your manuscript structure. You can add, move, rename, and delete scenes and chapters with any file manager and Novalist will reconcile the changes — no JSON editing required.
+
+How identity is kept so nothing gets lost when you rearrange files:
+
+- **Scene files** carry a one-line HTML comment at the very top, e.g. `<!--nv v=1 id=… -->`. This is the scene's durable id. It lets Novalist recognise a scene after you move it to another chapter folder or rename the file. The comment is stripped before editing, word count, and export — you never see it in the editor, and it does not affect your text.
+- **Chapter folders** contain a hidden `.nvchapter.json` marker holding the chapter's identity and metadata. Because identity lives in the marker, you can rename the chapter folder freely (the `NN -` number prefix is only a display hint and is never renumbered behind your back).
+- **`.nvindex.json`** in each draft folder is a rebuildable fingerprint cache used to detect moves. It is safe to delete; Novalist rebuilds it.
+- **`acts.json`** holds act metadata, split out of `draft.json`.
+
+What Novalist detects and reconciles:
+
+| You do this (in a file manager) | Novalist on next load / live |
+|---|---|
+| Add a `.novalist` file to a chapter folder | New scene, stamped with a fresh id, appended |
+| Move a scene file to another chapter folder | Recognised as the same scene, moved (by id, or by content if it had no id yet) |
+| Rename a scene file | Same scene, new file name |
+| Rename a chapter folder | Same chapter — identity preserved by the marker |
+| Add a new chapter folder | New chapter |
+| Delete a scene file or chapter folder | Removed from the manuscript |
+
+Two ways it runs:
+
+- **On load** — when you open a project, Novalist scans the active draft and applies any external changes made while it was closed.
+- **Live** — while the app is open, Novalist watches the active draft folder and reconciles changes shortly after they happen, so moving a file in Explorer updates the manuscript without a restart. If a file you have open in the editor changes on disk, Novalist asks before discarding unsaved edits. Live watching can be turned off in [Settings](23-settings.md) (for example on flaky network drives); load-time reconciliation still runs.
+
+Migration to this model happens automatically the first time you open an older project: scene files are stamped, markers and the index are written. It adds about 30 bytes per scene and one small file per chapter folder — no content is rewritten.
 
 ## Multi-book support
 

@@ -758,9 +758,11 @@ public class ProjectServiceTests : IDisposable
         await svc.LoadProjectAsync(root);
 
         // Merge stub received the legacy file; Keep draft file left intact; snapshots moved.
+        // (Load stamps the previously-unmanaged scene files with identity front-matter, so the
+        // body is compared after stripping it.)
         Assert.True(File.Exists(Path.Combine(draftChapters, chMerge.FolderName, "scene-01.novalist")));
-        Assert.Equal("keep-draft",
-            await File.ReadAllTextAsync(Path.Combine(draftChapters, chKeep.FolderName, "scene-01.novalist")));
+        Assert.Equal("keep-draft", FileFrontMatter.Strip(
+            await File.ReadAllTextAsync(Path.Combine(draftChapters, chKeep.FolderName, "scene-01.novalist"))));
         Assert.True(Directory.Exists(Path.Combine(bookRoot, "Drafts", "default", "Snapshots")));
     }
 }

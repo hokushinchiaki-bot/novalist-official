@@ -680,6 +680,7 @@ public partial class MainWindowViewModel : ObservableObject
         _gitService = gitService;
 
         Toast.Show = (msg, sev) => Dispatcher.UIThread.Post(() => ShowToast(msg, sev));
+        _projectService.DraftReconciled += OnDraftReconciled;
 
         RegisterBuiltInHotkeys();
         // Re-register on language change so descriptor display names re-localise.
@@ -1237,6 +1238,61 @@ public partial class MainWindowViewModel : ObservableObject
         OnProjectLoaded(metadata, projectPath);
     }
 
+    // ── Filesystem reconciliation (live watch + load-time) ──────────
+
+    private Novalist.Core.Services.DraftWatchService? _draftWatch;
+
+    /// <summary>Marshals a reconciliation result onto the UI thread for surfacing.</summary>
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // one-line Dispatcher marshal; logic is in HandleDraftReconciled
+    private void OnDraftReconciled(object? sender, ReconciliationReport report)
+        => Dispatcher.UIThread.Post(() => HandleDraftReconciled(report));
+
+    /// <summary>
+    /// Surfaces external draft changes (from load-time or live reconciliation): a non-blocking
+    /// toast summarising the counts plus a refresh of the views that show the chapter/scene tree.
+    /// </summary>
+    public void HandleDraftReconciled(ReconciliationReport report)
+    {
+        ShowToast(Loc.T("toast.filesystemSynced", SummarizeReconciliation(report)), ToastSeverity.Info);
+        Explorer?.Refresh();
+        _ = RefreshStatusBarAsync();
+    }
+
+    /// <summary>Builds a content-free, localised summary of a report (counts only — no titles).</summary>
+    public static string SummarizeReconciliation(ReconciliationReport report)
+    {
+        var parts = new List<string>();
+        void Add(int n, string key) { if (n > 0) parts.Add(Loc.T(key, n)); }
+
+        Add(report.Scenes.Count(s => s.Kind == SceneChangeKind.New), "toast.fsNew");
+        Add(report.Scenes.Count(s => s.Kind == SceneChangeKind.Moved), "toast.fsMoved");
+        Add(report.Scenes.Count(s => s.Kind == SceneChangeKind.Renamed), "toast.fsRenamed");
+        Add(report.Scenes.Count(s => s.Kind == SceneChangeKind.Deleted), "toast.fsDeleted");
+        Add(report.Chapters.Count(c => c.Kind == ChapterChangeKind.New), "toast.fsChaptersNew");
+        Add(report.Chapters.Count(c => c.Kind == ChapterChangeKind.Deleted), "toast.fsChaptersDeleted");
+
+        return string.Join(", ", parts);
+    }
+
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // native FileSystemWatcher + UI-thread reconcile marshalling; logic is in DraftWatchCoordinator
+    private void StartDraftWatch()
+    {
+        StopDraftWatch();
+        if (!_projectService.ProjectSettings.WatchFilesystem) return;
+        var root = _projectService.ActiveDraftRoot;
+        if (string.IsNullOrEmpty(root)) return;
+        _draftWatch = new Novalist.Core.Services.DraftWatchService(
+            root,
+            () => Dispatcher.UIThread.InvokeAsync(() => _projectService.ReconcileActiveDraftAsync()));
+    }
+
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage] // native watcher disposal
+    private void StopDraftWatch()
+    {
+        _draftWatch?.Dispose();
+        _draftWatch = null;
+    }
+
     private void OnProjectLoaded(ProjectMetadata metadata, string projectPath)
     {
         // Counts only — never project/book names or paths.
@@ -1359,6 +1415,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         _settingsService.AddRecentProject(metadata.Name, projectPath, GetCoverImageAbsolutePath());
         _ = _settingsService.SaveAsync();
+        StartDraftWatch();
         _ = RefreshStatusBarAsync();
         // Preload word metrics so first scene open doesn't trigger heavy first-time compute.
         _ = RefreshProjectWordMetricsAsync();

@@ -14,11 +14,24 @@ public interface IProjectService
     string? WorldBibleRoot { get; }
     bool IsProjectLoaded { get; }
 
+    /// <summary>Optional sink for v2 to v3 filesystem-migration progress (set before load).</summary>
+    IProgress<FilesystemMigrationProgress>? MigrationProgress { get; set; }
+
+    /// <summary>Raised when reconciliation (load-time or live) detects external draft changes.</summary>
+    event EventHandler<ReconciliationReport>? DraftReconciled;
+
     Task<ProjectMetadata> CreateProjectAsync(string parentDirectory, string projectName, string firstBookName);
     Task<ProjectMetadata> LoadProjectAsync(string projectDirectory);
     Task SaveProjectAsync();
     Task SaveProjectSettingsAsync();
     Task SaveScenesAsync();
+
+    /// <summary>
+    /// Reconciles the active draft with external filesystem edits. When <paramref name="apply"/>
+    /// is true and changes are found, the in-memory model is updated and persisted. Returns the
+    /// detected changes for surfacing to the user.
+    /// </summary>
+    Task<ReconciliationReport> ReconcileActiveDraftAsync(bool apply = true);
 
     // Project management
     Task RenameProjectAsync(string newName);

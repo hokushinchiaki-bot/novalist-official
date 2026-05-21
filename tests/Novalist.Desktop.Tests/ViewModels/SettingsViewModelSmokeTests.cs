@@ -74,6 +74,18 @@ public class SettingsViewModelTests
     }
 
     [AvaloniaFact]
+    public void WatchFilesystem_DefaultsTrue_AndPersistsToProjectSettings()
+    {
+        var h = Build(loaded: true);
+        Assert.True(h.Vm.WatchFilesystem);
+
+        h.Vm.WatchFilesystem = false;
+
+        Assert.False(h.ProjSettings.WatchFilesystem);
+        h.Proj.Received().SaveProjectSettingsAsync();
+    }
+
+    [AvaloniaFact]
     public void SearchFilter_TogglesSectionVisibility()
     {
         var h = Build();

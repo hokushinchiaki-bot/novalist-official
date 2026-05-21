@@ -106,6 +106,44 @@ public class MainWindowViewModelTests
         await h.Entity.Received().MigrateRelationshipDuplicatesAsync();
     }
 
+    // ── Filesystem reconciliation surfacing ─────────────────────────
+    [AvaloniaFact]
+    public void HandleDraftReconciled_ShowsToast()
+    {
+        var h = Build();
+        var report = new ReconciliationReport();
+        report.Scenes.Add(new SceneChange(SceneChangeKind.New, "id", "scene-01.novalist", "g"));
+
+        h.Vm.HandleDraftReconciled(report);
+
+        Assert.NotEmpty(h.Vm.Toasts);
+    }
+
+    [AvaloniaFact]
+    public void SummarizeReconciliation_CountsByKind()
+    {
+        var r = new ReconciliationReport();
+        r.Scenes.Add(new SceneChange(SceneChangeKind.New, "a", "f", "g"));
+        r.Scenes.Add(new SceneChange(SceneChangeKind.New, "b", "f", "g"));
+        r.Scenes.Add(new SceneChange(SceneChangeKind.Moved, "c", "f", "g"));
+        r.Scenes.Add(new SceneChange(SceneChangeKind.Deleted, "d", "f", "g"));
+        r.Chapters.Add(new ChapterChange(ChapterChangeKind.New, "cg", "fold"));
+
+        var s = MainWindowViewModel.SummarizeReconciliation(r);
+
+        Assert.Contains("2 new", s);
+        Assert.Contains("moved", s);
+        Assert.Contains("deleted", s);
+        Assert.Contains("chapters", s);
+        Assert.DoesNotContain("renamed", s); // none of that kind
+    }
+
+    [AvaloniaFact]
+    public void SummarizeReconciliation_EmptyReport_EmptyString()
+    {
+        Assert.Equal(string.Empty, MainWindowViewModel.SummarizeReconciliation(new ReconciliationReport()));
+    }
+
     // ── Construction & computed props ───────────────────────────────
     [AvaloniaFact]
     public void Constructs_ExposesComputedProps()
