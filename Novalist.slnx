@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="Novalist.Core/Novalist.Core.csproj" />
-  <Project Path="Novalist.Sdk/Novalist.Sdk.csproj" />
-  <Project Path="Novalist.Desktop/Novalist.Desktop.csproj" />
-  <Project Path="Novalist.Sdk.Example/Novalist.Sdk.Example.csproj" />
-</Solution>
