@@ -290,6 +290,34 @@ public class MainWindowViewModelTests
         Assert.NotNull(h.Vm.ActiveContentView);
     }
 
+    [AvaloniaFact]
+    public void SetActiveContentView_ReactivatesAlreadyOpenTabs()
+    {
+        // Regression: when a tab (Calendar, Maps, PlotGrid, RelationshipsGraph,
+        // Research) was already open and the user switched away, clicking the
+        // tab again must re-activate it. Previously SetActiveContentView
+        // dropped these activation keys, so the only way to reopen the view
+        // was to close the tab first and reopen it.
+        var h = Build();
+        var cases = new (string Key, Action Open)[]
+        {
+            ("Calendar", () => h.Vm.OpenCalendarCommand.Execute(null)),
+            ("Maps", () => h.Vm.OpenMapsCommand.Execute(null)),
+            ("PlotGrid", () => h.Vm.OpenPlotGridCommand.Execute(null)),
+            ("RelationshipsGraph", () => h.Vm.OpenRelationshipsGraphCommand.Execute(null)),
+            ("Research", () => h.Vm.OpenResearchCommand.Execute(null)),
+        };
+        foreach (var (key, open) in cases)
+        {
+            open();
+            Assert.Equal(key, h.Vm.ActiveContentView);
+            h.Vm.SetActiveContentViewCommand.Execute("Dashboard"); // switch away
+            Assert.Equal("Dashboard", h.Vm.ActiveContentView);
+            h.Vm.SetActiveContentViewCommand.Execute(key); // click the still-open tab
+            Assert.Equal(key, h.Vm.ActiveContentView);
+        }
+    }
+
     // ── Toasts ──────────────────────────────────────────────────────
     [AvaloniaFact]
     public void Toasts_ShowDismissCap()
@@ -505,6 +533,35 @@ public class MainWindowViewModelTests
 
         h.Vm.ToggleBookPickerCommand.Execute(null); // builds book cards
         Pump();
+    }
+
+    [AvaloniaFact]
+    public async Task AddBook_ClosesBookPicker()
+    {
+        // Regression: when the user creates a book from inside the picker
+        // overlay, the picker must auto-close so they can see the new book in
+        // the active workspace.
+        var h = await LoadedAsync();
+        h.Vm.ShowInputDialog = (_, _, _) => Task.FromResult<string?>("Created From Picker");
+        h.Vm.ToggleBookPickerCommand.Execute(null);
+        Assert.True(h.Vm.IsBookPickerOpen);
+
+        await h.Vm.AddBookCommand.ExecuteAsync(null);
+
+        Assert.False(h.Vm.IsBookPickerOpen);
+    }
+
+    [AvaloniaFact]
+    public async Task AddBook_Cancelled_LeavesBookPickerOpen()
+    {
+        var h = await LoadedAsync();
+        h.Vm.ShowInputDialog = (_, _, _) => Task.FromResult<string?>("   "); // blank -> cancelled
+        h.Vm.ToggleBookPickerCommand.Execute(null);
+        Assert.True(h.Vm.IsBookPickerOpen);
+
+        await h.Vm.AddBookCommand.ExecuteAsync(null);
+
+        Assert.True(h.Vm.IsBookPickerOpen); // still open after cancel
     }
 
     [AvaloniaFact]
@@ -790,6 +847,22 @@ public class MainWindowViewModelTests
     }
 
     [AvaloniaFact]
+    public async Task Hotkeys_ParagraphStyleEntries_Removed()
+    {
+        // Regression: the paragraph-style hotkeys (Heading / Subheading /
+        // Blockquote / Poetry / Clear) had no working UI and were removed.
+        // They must not reappear in the descriptor list.
+        await LoadedAsync();
+        var ids = Novalist.Desktop.App.HotkeyService.GetAllDescriptors()
+            .Select(d => d.ActionId).ToHashSet();
+        Assert.DoesNotContain("app.editor.styleHeading", ids);
+        Assert.DoesNotContain("app.editor.styleSubheading", ids);
+        Assert.DoesNotContain("app.editor.styleBlockquote", ids);
+        Assert.DoesNotContain("app.editor.stylePoetry", ids);
+        Assert.DoesNotContain("app.editor.styleClear", ids);
+    }
+
+    [AvaloniaFact]
     public async Task Hotkeys_DescriptorLambdas_Invoke()
     {
         var h = await LoadedAsync();
@@ -802,7 +875,6 @@ public class MainWindowViewModelTests
         await h.Vm.Editor!.OpenSceneAsync(ch, sc);
         h.Vm.Editor.AddCommentAction = _ => { };
         h.Vm.Editor.AddFootnoteAction = _ => { };
-        h.Vm.Editor.ApplyParagraphStyleAction = _ => { };
         h.Vm.Editor.ToggleBoldAction = () => { };
         h.Vm.Editor.ToggleItalicAction = () => { };
         h.Vm.Editor.ToggleUnderlineAction = () => { };
@@ -1307,6 +1379,38 @@ public class MainWindowViewModelTests
         Pump();
         await h.Proj.Received().SwitchBookAsync("b2");
     }
+
+    [AvaloniaFact]
+    public async Task SwitchBook_ClosesOpenSceneTabs_InBothPanes()
+    {
+        // Regression: switching to a different book (also the path taken when
+        // creating a new book — AddBookAsync assigns ActiveBook) must close
+        // every open scene tab from the outgoing book so the user does not
+        // end up viewing scenes that belong to a different draft tree.
+        var h = await LoadedAsync();
+        var ch = new ChapterData { Guid = "c1", Title = "Ch" };
+        var s1 = new SceneData { Id = "s1", Title = "S1", ChapterGuid = "c1" };
+        var s2 = new SceneData { Id = "s2", Title = "S2", ChapterGuid = "c1" };
+        await h.Vm.Editor!.OpenSceneAsync(ch, s1);
+        await h.Vm.Editor.OpenSceneAsync(ch, s2);
+        await h.Vm.ToggleSplitEditorCommand.ExecuteAsync(null);
+        Pump();
+        await h.Vm.MoveSceneTabAsync(h.Vm.Editor, h.Vm.Editor.OpenScenes[0]);
+        Pump();
+        Assert.NotEmpty(h.Vm.Editor.OpenScenes);
+        Assert.NotNull(h.Vm.SecondaryEditor);
+
+        h.Vm.ActiveBook = new BookData { Id = "b2", Name = "Book Two" };
+        Pump();
+        Pump();
+
+        Assert.Empty(h.Vm.Editor.OpenScenes);
+        // SecondaryEditor may be torn down by split-pane lifecycle after its
+        // scenes are closed; either way the outgoing book's tabs are gone.
+        if (h.Vm.SecondaryEditor != null)
+            Assert.Empty(h.Vm.SecondaryEditor.OpenScenes);
+    }
+
 
     [AvaloniaFact]
     public async Task RunEntityWizard_Custom()

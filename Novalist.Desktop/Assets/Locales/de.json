@@ -344,12 +344,7 @@
       "alignJustify": "Blocksatz",
       "findReplace": "Suchen / Ersetzen",
       "addComment": "Kommentar zur Auswahl hinzufügen",
-      "addFootnote": "Fußnote am Cursor einfügen",
-      "styleHeading": "Stil: Überschrift",
-      "styleSubheading": "Stil: Unterüberschrift",
-      "styleBlockquote": "Stil: Blockzitat",
-      "stylePoetry": "Stil: Lyrik",
-      "styleClear": "Stil: Zurücksetzen"
+      "addFootnote": "Fußnote am Cursor einfügen"
     },
     "project": {
       "save": "Szene speichern"

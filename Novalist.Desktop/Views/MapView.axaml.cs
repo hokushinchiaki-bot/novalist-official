@@ -590,8 +590,8 @@ public partial class MapView : UserControl
                     break;
                 case "pinClick":
                     var entityId = doc.RootElement.TryGetProperty("entityId", out var eid) ? eid.GetString() : null;
-                    if (!string.IsNullOrEmpty(entityId))
-                        OpenEntityByIdAsync(entityId!);
+                    if (!string.IsNullOrEmpty(entityId) && _vm != null)
+                        _ = _vm.ShowPinPeekAsync(entityId!, 24, 24);
                     break;
                 case "placePinAt":
                     _ = HandlePlacePinAtAsync(doc.RootElement);
@@ -791,14 +791,6 @@ public partial class MapView : UserControl
     // HandleRequestMoveToLayerAsync / HandleImageContextAsync / HandlePinContextAsync
     // removed — every element now exposes layer move + properties inline in the bottom
     // bar (no LayerPickerDialog, no MapPinDialog).
-
-    private void OpenEntityByIdAsync(string entityId)
-    {
-        if (TopLevel.GetTopLevel(this) is MainWindow mw && mw.DataContext is MainWindowViewModel main)
-        {
-            _ = main.OpenEntityByIdAsync(entityId);
-        }
-    }
 
     private void OnMapItemClick(object? sender, RoutedEventArgs e)
     {

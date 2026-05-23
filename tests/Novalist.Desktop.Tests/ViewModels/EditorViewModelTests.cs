@@ -175,6 +175,26 @@ public class EditorViewModelTests
     }
 
     [AvaloniaFact]
+    public async Task CloseAllScenesAsync_ClosesEveryTab()
+    {
+        // Regression: switching/creating a book triggers CloseAllScenesAsync —
+        // every open tab must be removed and the editor cleared so the old
+        // book's scenes do not linger against the incoming draft tree.
+        var h = Build();
+        var (ch, s1) = Scene("s1", content: "one", h: h);
+        var s2 = new SceneData { Id = "s2", Title = "Two", Order = 1 };
+        h.Disk["s2"] = "two";
+        await h.Vm.OpenSceneAsync(ch, s1);
+        await h.Vm.OpenSceneAsync(ch, s2);
+        Assert.Equal(2, h.Vm.OpenScenes.Count);
+
+        await h.Vm.CloseAllScenesAsync();
+
+        Assert.Empty(h.Vm.OpenScenes);
+        Assert.False(h.Vm.IsDocumentOpen);
+    }
+
+    [AvaloniaFact]
     public async Task OpenScene_Archived_ReadsArchivedContent()
     {
         var h = Build();

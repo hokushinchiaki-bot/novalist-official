@@ -223,29 +223,6 @@ body { display: flex; justify-content: center; }
 }
 .nv-fn:hover { text-decoration: underline; }
 
-/* Named paragraph styles */
-p.nv-style-heading {
-    font-size: 1.6em;
-    font-weight: 700;
-    margin-top: 1em;
-}
-p.nv-style-subheading {
-    font-size: 1.25em;
-    font-weight: 600;
-    margin-top: 0.6em;
-}
-p.nv-style-blockquote {
-    margin-left: 2em;
-    font-style: italic;
-    opacity: 0.85;
-    border-left: 3px solid color-mix(in srgb, var(--fg) 35%, transparent 65%);
-    padding-left: 0.8em;
-}
-p.nv-style-poetry {
-    font-family: Georgia, "Times New Roman", serif;
-    white-space: pre-wrap;
-    margin-left: 1em;
-}
 .nv-comment.nv-comment-active {
     background-color: rgba(255, 200, 60, 0.55);
 }
@@ -2631,22 +2608,6 @@ window.insertFootnoteAtSelection = function (footnoteId) {
     try { editor.dispatchEvent(new Event('input', { bubbles: true })); } catch { }
     sendMessage({ type: 'footnoteInserted', footnoteId: footnoteId, number: num });
     return num;
-};
-
-// Named paragraph styles: applies a class to the paragraph containing the
-// current selection / caret. Pass empty styleId to clear.
-window.applyParagraphStyle = function (styleId) {
-    var sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
-    var range = sel.getRangeAt(0);
-    var node = range.startContainer;
-    while (node && node !== editor && !(node.nodeType === 1 && node.tagName === 'P'))
-        node = node.parentNode;
-    if (!node || node === editor) return;
-    var classes = (node.className || '').split(/\s+/).filter(function (c) { return c && c.indexOf('nv-style-') !== 0; });
-    if (styleId) classes.push('nv-style-' + styleId);
-    node.className = classes.join(' ');
-    try { editor.dispatchEvent(new Event('input', { bubbles: true })); } catch { }
 };
 
 window.setFootnotesData = function (data) {

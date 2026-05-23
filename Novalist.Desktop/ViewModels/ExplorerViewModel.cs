@@ -837,8 +837,9 @@ public partial class ExplorerViewModel : ObservableObject
 
     private IReadOnlyList<string> GetExistingActNames()
     {
-        return _projectService.GetChaptersOrdered()
-            .Select(c => c.Act)
+        var fromChapters = _projectService.GetChaptersOrdered().Select(c => c.Act);
+        var fromBookActs = _projectService.ActiveBook?.Acts.Select(a => a.Name) ?? [];
+        return fromChapters.Concat(fromBookActs)
             .Where(a => !string.IsNullOrWhiteSpace(a))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(a => a, StringComparer.OrdinalIgnoreCase)

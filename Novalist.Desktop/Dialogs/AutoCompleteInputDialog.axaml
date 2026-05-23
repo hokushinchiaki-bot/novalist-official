@@ -33,6 +33,8 @@
                 <AutoCompleteBox x:Name="InputBox"
                                  Watermark="{loc:Loc dialog.enterNameWatermark}"
                                  FilterMode="ContainsOrdinal"
+                                 MinimumPrefixLength="0"
+                                 MinimumPopulateDelay="0"
                                  MaxLength="200" />
             </StackPanel>
         </DockPanel>

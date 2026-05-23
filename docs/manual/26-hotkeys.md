@@ -54,8 +54,6 @@ Keys in this table use their on-screen names. A few aliases:
 | Align right | `Ctrl+R` |
 | Align justify | `Ctrl+J` |
 
-> **Known bug:** the paragraph-style actions (Heading `Ctrl+Alt+1`, Subheading `Ctrl+Alt+2`, Blockquote `Ctrl+Alt+3`, Poetry `Ctrl+Alt+4`, Clear `Ctrl+Alt+0`) appear in the rebind grid but currently have no visible effect in the running app.
-
 ## Editor — text actions
 
 | Action | Default |

@@ -369,6 +369,42 @@ public class ProjectServiceTests : IDisposable
         => await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.CreateBookAsync("x"));
 
     [Fact]
+    public async Task SwitchBook_LoadsTargetBookChaptersAndScenes()
+    {
+        // Regression: switching between books must flush the outgoing book's
+        // draft and load the incoming book's chapters + scenes manifest from
+        // disk. Previously SwitchBookAsync only swapped ActiveBook and reloaded
+        // the manifest, leaving Chapters empty (and causing the next save to
+        // overwrite the on-disk draft with empty data).
+        await Create();
+        var b1Id = _sut.ActiveBook!.Id;
+        var ch1 = await _sut.CreateChapterAsync("Chapter A");
+        var sc1 = await _sut.CreateSceneAsync(ch1.Guid, "Scene A");
+
+        var b2 = await _sut.CreateBookAsync("Book Two");
+        await _sut.SwitchBookAsync(b2.Id);
+        Assert.Empty(_sut.GetChaptersOrdered());
+        var ch2 = await _sut.CreateChapterAsync("Chapter B");
+        var sc2 = await _sut.CreateSceneAsync(ch2.Guid, "Scene B");
+
+        await _sut.SwitchBookAsync(b1Id);
+        var chapters1 = _sut.GetChaptersOrdered();
+        Assert.Single(chapters1);
+        Assert.Equal(ch1.Guid, chapters1[0].Guid);
+        var scenes1 = _sut.GetScenesForChapter(ch1.Guid);
+        Assert.Single(scenes1);
+        Assert.Equal(sc1.Id, scenes1[0].Id);
+
+        await _sut.SwitchBookAsync(b2.Id);
+        var chapters2 = _sut.GetChaptersOrdered();
+        Assert.Single(chapters2);
+        Assert.Equal(ch2.Guid, chapters2[0].Guid);
+        var scenes2 = _sut.GetScenesForChapter(ch2.Guid);
+        Assert.Single(scenes2);
+        Assert.Equal(sc2.Id, scenes2[0].Id);
+    }
+
+    [Fact]
     public async Task RenameProject()
     {
         await Create();

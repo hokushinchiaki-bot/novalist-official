@@ -639,6 +639,11 @@ public partial class MainWindow : Window
         maps.ShowConfirmDialog = ShowConfirmDialogAsync;
         maps.ManageProfilesRequested = ManageMapProfilesAsync;
         maps.PushEntityOptions = PushEntityOptionsToMapAsync;
+        // Delegate peek-data construction to the editor's existing extension so
+        // pin clicks on the map reuse the same display-data pipeline as hover
+        // peeks in the editor.
+        if (DataContext is MainWindowViewModel mvm && mvm.Editor != null)
+            maps.BuildEntityPeekRequested = mvm.Editor.FocusPeekExtension.BuildDisplayDataByIdAsync;
     }
 
     private async Task<List<Novalist.Core.Models.MapProfile>?> ManageMapProfilesAsync(
@@ -1479,7 +1484,8 @@ public partial class MainWindow : Window
                          || vm.IsStartMenuOpen
                          || vm.IsSettingsOpen
                          || vm.IsProjectOverviewOpen
-                         || vm.IsExtensionsOpen;
+                         || vm.IsExtensionsOpen
+                         || vm.IsBookPickerOpen;
         this.FindControl<EditorView>("EditorPanel")?.SetWebViewVisible(!anyOverlay);
         this.FindControl<ManuscriptView>("ManuscriptPanel")?.SetWebViewVisible(!anyOverlay);
         this.FindControl<MapView>("MapsPanel")?.SetWebViewVisible(!anyOverlay);

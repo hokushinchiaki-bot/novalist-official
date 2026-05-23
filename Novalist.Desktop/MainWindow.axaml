@@ -290,14 +290,17 @@
                     </StackPanel>
                 </Button>
 
-                <StackPanel Grid.Column="2"
-                            Orientation="Horizontal"
-                            Spacing="{StaticResource SpacingNormal}"
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Right"
-                            ToolTip.Tip="{Binding GoalTooltip}">
+                <!-- Bars share leftover space via `*` columns capped by MaxWidth, so
+                     when the window narrows the ProgressBars shrink instead of the
+                     trailing entries clipping off the right edge. -->
+                <Grid Grid.Column="2"
+                      ColumnDefinitions="Auto,Auto,Auto,*,Auto,*"
+                      ColumnSpacing="{StaticResource SpacingNormal}"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Right"
+                      ToolTip.Tip="{Binding GoalTooltip}">
                     <!-- Extension status bar items -->
-                    <ItemsControl ItemsSource="{Binding ExtensionStatusBarItems}">
+                    <ItemsControl Grid.Column="0" ItemsSource="{Binding ExtensionStatusBarItems}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" Spacing="{StaticResource SpacingNormal}" />
@@ -318,7 +321,8 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <!-- Git status -->
-                    <StackPanel Orientation="Horizontal"
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
                                 Spacing="{StaticResource SpacingSmall}"
                                 IsVisible="{Binding IsInGitRepo}"
                                 Margin="0,0,8,0">
@@ -334,23 +338,31 @@
                             </StackPanel>
                         </Button>
                     </StackPanel>
-                    <TextBlock Text="{Binding DailyGoalLabel}"
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding DailyGoalLabel}"
                                Classes="statusMetric"
                                Foreground="{DynamicResource NormalText}" />
-                    <ProgressBar Minimum="0"
+                    <ProgressBar Grid.Column="3"
+                                 Minimum="0"
                                  Maximum="100"
-                                 Width="72"
+                                 MinWidth="24"
+                                 MaxWidth="72"
                                  Height="4"
+                                 HorizontalAlignment="Stretch"
                                  Value="{Binding DailyGoalPercent}" />
-                    <TextBlock Text="{Binding ProjectGoalLabel}"
+                    <TextBlock Grid.Column="4"
+                               Text="{Binding ProjectGoalLabel}"
                                Classes="statusMetric"
                                Foreground="{DynamicResource NormalText}" />
-                    <ProgressBar Minimum="0"
+                    <ProgressBar Grid.Column="5"
+                                 Minimum="0"
                                  Maximum="100"
-                                 Width="72"
+                                 MinWidth="24"
+                                 MaxWidth="72"
                                  Height="4"
+                                 HorizontalAlignment="Stretch"
                                  Value="{Binding ProjectGoalPercent}" />
-                </StackPanel>
+                </Grid>
             </Grid>
         </Border>
 

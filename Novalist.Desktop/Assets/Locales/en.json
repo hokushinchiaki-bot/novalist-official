@@ -442,12 +442,7 @@
       "alignJustify": "Align Justify",
       "findReplace": "Find / Replace",
       "addComment": "Add comment to selection",
-      "addFootnote": "Add footnote at cursor",
-      "styleHeading": "Style: Heading",
-      "styleSubheading": "Style: Subheading",
-      "styleBlockquote": "Style: Block quote",
-      "stylePoetry": "Style: Poetry",
-      "styleClear": "Style: Clear"
+      "addFootnote": "Add footnote at cursor"
     },
     "project": {
       "save": "Save Scene"

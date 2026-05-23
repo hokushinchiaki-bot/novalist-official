@@ -29,6 +29,10 @@ public partial class AutoCompleteInputDialog : UserControl
         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
             InputBox.Focus();
+            // Force the suggestion dropdown open so existing entries are
+            // visible immediately without requiring the user to type a prefix.
+            if (InputBox.ItemsSource != null)
+                InputBox.IsDropDownOpen = true;
         }, Avalonia.Threading.DispatcherPriority.Input);
     }
 

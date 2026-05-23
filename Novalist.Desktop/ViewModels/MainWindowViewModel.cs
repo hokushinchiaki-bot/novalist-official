@@ -728,12 +728,6 @@ public partial class MainWindowViewModel : ObservableObject
             new HotkeyDescriptor { ActionId = "app.commandPalette", DisplayName = Loc.T("hotkeys.app.commandPalette"), Category = cat, DefaultGesture = "Ctrl+Shift+P", OnExecute = () => _ = OpenCommandPaletteAsync() },
             new HotkeyDescriptor { ActionId = "app.editor.addComment", DisplayName = Loc.T("hotkeys.editor.addComment"), Category = catEditor, DefaultGesture = "Ctrl+Shift+M", OnExecute = AddComment, CanExecute = () => ActiveContentView == "Scene" && (ActiveEditor ?? Editor)?.IsDocumentOpen == true },
             new HotkeyDescriptor { ActionId = "app.editor.addFootnote", DisplayName = Loc.T("hotkeys.editor.addFootnote"), Category = catEditor, DefaultGesture = "Ctrl+Shift+F", OnExecute = () => _ = AddFootnote(), CanExecute = () => ActiveContentView == "Scene" && (ActiveEditor ?? Editor)?.IsDocumentOpen == true },
-            new HotkeyDescriptor { ActionId = "app.editor.styleHeading", DisplayName = Loc.T("hotkeys.editor.styleHeading"), Category = catEditor, DefaultGesture = "Ctrl+Alt+1", OnExecute = () => ApplyParagraphStyle("heading"), CanExecute = () => (ActiveEditor ?? Editor)?.IsDocumentOpen == true },
-            new HotkeyDescriptor { ActionId = "app.editor.styleSubheading", DisplayName = Loc.T("hotkeys.editor.styleSubheading"), Category = catEditor, DefaultGesture = "Ctrl+Alt+2", OnExecute = () => ApplyParagraphStyle("subheading"), CanExecute = () => (ActiveEditor ?? Editor)?.IsDocumentOpen == true },
-            new HotkeyDescriptor { ActionId = "app.editor.styleBlockquote", DisplayName = Loc.T("hotkeys.editor.styleBlockquote"), Category = catEditor, DefaultGesture = "Ctrl+Alt+3", OnExecute = () => ApplyParagraphStyle("blockquote"), CanExecute = () => (ActiveEditor ?? Editor)?.IsDocumentOpen == true },
-            new HotkeyDescriptor { ActionId = "app.editor.stylePoetry", DisplayName = Loc.T("hotkeys.editor.stylePoetry"), Category = catEditor, DefaultGesture = "Ctrl+Alt+4", OnExecute = () => ApplyParagraphStyle("poetry"), CanExecute = () => (ActiveEditor ?? Editor)?.IsDocumentOpen == true },
-            new HotkeyDescriptor { ActionId = "app.editor.styleClear", DisplayName = Loc.T("hotkeys.editor.styleClear"), Category = catEditor, DefaultGesture = "Ctrl+Alt+0", OnExecute = () => ApplyParagraphStyle(string.Empty), CanExecute = () => (ActiveEditor ?? Editor)?.IsDocumentOpen == true },
-
             // ── Scene / Tab management ──
             new HotkeyDescriptor { ActionId = "app.scene.closeTab", DisplayName = Loc.T("hotkeys.scene.closeTab"), Category = catScene, DefaultGesture = "Ctrl+W", OnExecute = () => _ = CloseSceneTabAsync(), CanExecute = () => Editor?.IsDocumentOpen == true },
             new HotkeyDescriptor { ActionId = "app.scene.create", DisplayName = Loc.T("hotkeys.scene.create"), Category = catScene, DefaultGesture = "Ctrl+N", OnExecute = () => Explorer?.CreateSceneCommand.Execute(null), CanExecute = () => Explorer != null },
@@ -2616,6 +2610,44 @@ public partial class MainWindowViewModel : ObservableObject
             return;
         }
 
+        if (string.Equals(view, "Maps", StringComparison.Ordinal))
+        {
+            IsMapsOpen = true;
+            ActiveContentView = "Maps";
+            return;
+        }
+
+        if (string.Equals(view, "PlotGrid", StringComparison.Ordinal))
+        {
+            IsPlotGridOpen = true;
+            ActiveContentView = "PlotGrid";
+            PlotGrid?.Refresh();
+            return;
+        }
+
+        if (string.Equals(view, "RelationshipsGraph", StringComparison.Ordinal))
+        {
+            IsRelationshipsGraphOpen = true;
+            ActiveContentView = "RelationshipsGraph";
+            return;
+        }
+
+        if (string.Equals(view, "Calendar", StringComparison.Ordinal))
+        {
+            IsCalendarOpen = true;
+            ActiveContentView = "Calendar";
+            Calendar?.Refresh();
+            return;
+        }
+
+        if (string.Equals(view, "Research", StringComparison.Ordinal))
+        {
+            IsResearchOpen = true;
+            ActiveContentView = "Research";
+            Research?.Refresh();
+            return;
+        }
+
         if (string.Equals(view, "Scene", StringComparison.Ordinal) && Editor?.IsDocumentOpen == true)
         {
             ActiveContentView = "Scene";
@@ -2758,12 +2790,6 @@ public partial class MainWindowViewModel : ObservableObject
         pane.AddCommentAction.Invoke(commentId);
     }
 
-    private void ApplyParagraphStyle(string styleId)
-    {
-        var pane = (ActiveEditor == Editor || ActiveEditor == SecondaryEditor) ? ActiveEditor : Editor;
-        pane?.ApplyParagraphStyleAction?.Invoke(styleId);
-    }
-
     [RelayCommand]
     private async Task AddFootnote()
     {
@@ -2904,9 +2930,14 @@ public partial class MainWindowViewModel : ObservableObject
     private async Task SwitchBookCoreAsync(string bookId)
     {
         Utilities.Log.Info($"Switch book id={bookId}.");
-        // Save current work
-        if (Editor?.IsDirty == true)
-            await Editor.SaveAsync();
+        // Close every open scene tab in both panes before switching. Tabs hold
+        // scene references tied to the outgoing book's draft tree; leaving
+        // them open points the editor at scenes that no longer belong to the
+        // active book. CloseAllScenesAsync flushes dirty content first.
+        if (Editor != null)
+            await Editor.CloseAllScenesAsync();
+        if (SecondaryEditor != null)
+            await SecondaryEditor.CloseAllScenesAsync();
         if (EntityEditor?.IsOpen == true)
             await EntityEditor.CloseCommand.ExecuteAsync(null);
 
@@ -2944,6 +2975,7 @@ public partial class MainWindowViewModel : ObservableObject
         var book = await _projectService.CreateBookAsync(name.Trim());
         RefreshBookList();
         ActiveBook = Books.FirstOrDefault(b => b.Id == book.Id);
+        IsBookPickerOpen = false;
     }
 
     [RelayCommand]

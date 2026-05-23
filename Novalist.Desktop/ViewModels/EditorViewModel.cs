@@ -144,10 +144,6 @@ public partial class EditorViewModel : ObservableObject, IFootnoteEditorContext
     public Action<string>? AddCommentAction { get; set; }
     /// <summary>Inserts a footnote anchor at the current caret position. Param = footnote id.</summary>
     public Action<string>? AddFootnoteAction { get; set; }
-    /// <summary>Applies a named paragraph style to the paragraph at the caret.
-    /// Pass empty string to clear styles. Built-in ids: heading, subheading,
-    /// blockquote, poetry.</summary>
-    public Action<string>? ApplyParagraphStyleAction { get; set; }
     /// <summary>Removes a footnote anchor. Param = footnote id.</summary>
     public Action<string>? RemoveFootnoteAction { get; set; }
     /// <summary>Scrolls to and highlights a footnote anchor. Param = footnote id.</summary>
@@ -655,6 +651,17 @@ public partial class EditorViewModel : ObservableObject, IFootnoteEditorContext
         _scene.WordCount = WordCount;
         await _projectService.SaveScenesAsync();
         SceneSaved?.Invoke(_chapter, _scene);
+    }
+
+    /// <summary>Closes every open scene tab in this pane, flushing dirty
+    /// content to disk first. Used when the project's active book changes — the
+    /// outgoing book's scenes must not stay open against a different draft.</summary>
+    public async Task CloseAllScenesAsync()
+    {
+        // Snapshot the list — CloseTabAsync mutates OpenScenes while iterating.
+        var tabs = OpenScenes.ToList();
+        foreach (var tab in tabs)
+            await CloseTabAsync(tab);
     }
 
     public async Task CloseAsync()

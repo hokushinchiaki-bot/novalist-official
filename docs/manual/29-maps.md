@@ -12,10 +12,10 @@ Each map has its own JSON file under `Books/<book>/Drafts/<draftId>/Maps/<mapId>
 
 ## Editing vs viewing
 
-The map has two modes: **Edit** (default) and **View**. The toolbar's *Toggle Edit / View* button swaps between them.
+The map has two modes: **View** (default) and **Edit**. The toolbar's *Toggle Edit / View* button swaps between them.
 
-- **Edit** mode shows resize handles on the selected image, allows dragging images and pins, exposes the layer panel, and shows context menus.
-- **View** mode is for reading. Images are not draggable; clicking a pin opens its linked entity in a focus peek.
+- **View** mode is for reading. The edit tool palette is hidden, images are not draggable, and clicking a pin opens its linked entity in a focus-peek card.
+- **Edit** mode reveals the tool palette (add image, add pin, label, spline, terrain, building, border, clip-edit, delete), shows resize handles on the selected image, lets you drag images and pins, and exposes context menus.
 
 ## Adding images
 
@@ -75,7 +75,7 @@ Move pins by dragging them. Right-click a pin for a menu: *Edit…* (re-edit lab
 
 A pin belongs to a **layer** — the one that was active when it was placed. It follows that layer's visibility, opacity, zoom-range and floor settings, and *Move to layer…* reassigns it.
 
-In view mode, clicking a pin that has a linked entity currently opens that entity's editor. Showing the focus peek there instead is on the wish list.
+In view mode, clicking a pin that has a linked entity opens the focus-peek card with that entity's summary — same card you see when hovering an entity mention in the editor. Use the card's open button to jump to the full entity editor when you actually want to edit.
 
 ## Labels
 

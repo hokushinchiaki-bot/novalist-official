@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Novalist.Desktop.ViewModels"
+             xmlns:views="using:Novalist.Desktop.Views"
              xmlns:m="using:Novalist.Core.Models"
              xmlns:loc="using:Novalist.Desktop.Localization"
              x:Class="Novalist.Desktop.Views.MapView"
@@ -161,26 +162,26 @@
                 <Button Classes="toolBtn"
                         ToolTip.Tip="{loc:Loc map.toolAddImageTooltip}"
                         Command="{Binding AddImageCommand}"
-                        IsEnabled="{Binding IsEditMode}">
+                        IsVisible="{Binding IsEditMode}">
                     <Path Classes="toolIcon" Data="{StaticResource IconImage}" />
                 </Button>
                 <ToggleButton Classes="toolBtn"
                               ToolTip.Tip="{loc:Loc map.toolAddPinTooltip}"
                               IsChecked="{Binding IsPinPlaceMode, Mode=TwoWay}"
-                              IsEnabled="{Binding IsEditMode}">
+                              IsVisible="{Binding IsEditMode}">
                     <Path Classes="toolIcon" Data="{StaticResource IconMapPin}" />
                 </ToggleButton>
                 <ToggleButton Classes="toolBtn"
                               ToolTip.Tip="{loc:Loc map.toolAddLabelTooltip}"
                               IsChecked="{Binding IsLabelPlaceMode, Mode=TwoWay}"
-                              IsEnabled="{Binding IsEditMode}">
+                              IsVisible="{Binding IsEditMode}">
                     <Path Classes="toolIcon" Data="{StaticResource IconType}" />
                 </ToggleButton>
                 <ToggleButton x:Name="SplineToolButton"
                               Classes="toolBtn"
                               ToolTip.Tip="{loc:Loc map.toolSplineTooltip}"
                               IsChecked="{Binding IsSplineMode, Mode=TwoWay}"
-                              IsEnabled="{Binding IsEditMode}">
+                              IsVisible="{Binding IsEditMode}">
                     <Path Classes="toolIcon" Data="{StaticResource IconSpline}" />
                     <ToggleButton.Flyout>
                         <MenuFlyout>
@@ -218,7 +219,7 @@
                               Classes="toolBtn"
                               ToolTip.Tip="{loc:Loc map.toolTerrainTooltip}"
                               IsChecked="{Binding IsTerrainMode, Mode=TwoWay}"
-                              IsEnabled="{Binding IsEditMode}">
+                              IsVisible="{Binding IsEditMode}">
                     <Path Classes="toolIcon" Data="{StaticResource IconTerrain}" />
                     <ToggleButton.Flyout>
                         <MenuFlyout>
@@ -236,7 +237,7 @@
                               Classes="toolBtn"
                               ToolTip.Tip="{loc:Loc map.toolBuildingTooltip}"
                               IsChecked="{Binding IsBuildingMode, Mode=TwoWay}"
-                              IsEnabled="{Binding IsEditMode}">
+                              IsVisible="{Binding IsEditMode}">
                     <Path Classes="toolIcon" Data="{StaticResource IconBuilding}" />
                     <ToggleButton.Flyout>
                         <MenuFlyout>
@@ -254,19 +255,19 @@
                 <Button Classes="toolBtn"
                         ToolTip.Tip="{loc:Loc map.toolBorderTooltip}"
                         Command="{Binding EditMapBorderCommand}"
-                        IsEnabled="{Binding IsEditMode}">
+                        IsVisible="{Binding IsEditMode}">
                     <Path Classes="toolIcon" Data="{StaticResource IconBorder}" />
                 </Button>
                 <Button Classes="toolBtn"
                         ToolTip.Tip="{loc:Loc map.editClipTooltip}"
                         Click="OnEditClipClick"
-                        IsEnabled="{Binding IsEditMode}">
+                        IsVisible="{Binding IsEditMode}">
                     <Path Classes="toolIcon" Data="{StaticResource IconScissors}" />
                 </Button>
                 <Button Classes="toolBtn"
                         ToolTip.Tip="{loc:Loc map.toolDeleteTooltip}"
                         Click="OnDeleteSelectedClick"
-                        IsEnabled="{Binding IsEditMode}">
+                        IsVisible="{Binding IsEditMode}">
                     <Path Classes="toolIcon" Data="{StaticResource IconTrash}" />
                 </Button>
                 <Border Height="1" Background="{DynamicResource RibbonGroupBorder}" Margin="6,4" />
@@ -427,7 +428,7 @@
                                 FontSize="{StaticResource FontSizeBodySmall}"
                                 Command="{Binding AddLayerCommand}"
                                 ToolTip.Tip="{loc:Loc map.layerAddTooltip}"
-                                IsEnabled="{Binding IsEditMode}" />
+                                IsVisible="{Binding IsEditMode}" />
                     </Grid>
                 </Border>
 
@@ -719,5 +720,19 @@
                 </ScrollViewer>
             </DockPanel>
         </Border>
+
+        <Popup x:Name="MapFocusPeekPopup"
+               Grid.Column="1"
+               Placement="AnchorAndGravity"
+               PlacementAnchor="TopLeft"
+               PlacementGravity="BottomRight"
+               IsOpen="{Binding FocusPeek.IsOpen}"
+               HorizontalOffset="{Binding FocusPeek.Left}"
+               VerticalOffset="{Binding FocusPeek.Top}"
+               IsLightDismissEnabled="False"
+               WindowManagerAddShadowHint="False">
+            <views:FocusPeekCardView DataContext="{Binding FocusPeek}"
+                                     IsHitTestVisible="True" />
+        </Popup>
     </Grid>
 </UserControl>

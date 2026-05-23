@@ -623,4 +623,42 @@ public class ExplorerViewModelTests
         await h.Vm.SetChapterActCommand.ExecuteAsync(ch); // RequestAutoCompleteInput -> null hook -> null
         Assert.Equal("Act I", ch.Chapter.Act); // unchanged
     }
+
+    [Fact]
+    public async Task SetChapterAct_PassesExistingActsAsSuggestions()
+    {
+        // Regression: the Set Act dialog must offer existing acts as
+        // suggestions so the user can pick one instead of being forced to
+        // retype an existing name (which previously was the only obvious
+        // path because the autocomplete dropdown was hidden behind a typed
+        // prefix). Existing acts come from both chapter assignments AND any
+        // orphan acts tracked on the active book.
+        var orphanActs = new List<ActData>
+        {
+            new() { Name = "Prologue" },
+            new() { Name = "Epilogue" },
+        };
+        var book = new BookData { Acts = orphanActs };
+        var h = Build(x =>
+        {
+            x.Chapters = [Chap("c1", "One", 1, act: "Act I"), Chap("c2", "Two", 2, act: "Act II"), Chap("c3", "Three", 3)];
+        });
+        h.Proj.ActiveBook.Returns(book);
+
+        IReadOnlyList<string>? captured = null;
+        h.Vm.ShowAutoCompleteInputDialog = (_, _, s) =>
+        {
+            captured = s;
+            return Task.FromResult<string?>("Act I"); // pick an existing act
+        };
+        var ch = ChapVm(h.Vm, "c3");
+        await h.Vm.SetChapterActCommand.ExecuteAsync(ch);
+
+        Assert.NotNull(captured);
+        Assert.Contains("Act I", captured);
+        Assert.Contains("Act II", captured);
+        Assert.Contains("Prologue", captured);
+        Assert.Contains("Epilogue", captured);
+        Assert.Equal("Act I", ch.Chapter.Act); // picking existing applied
+    }
 }

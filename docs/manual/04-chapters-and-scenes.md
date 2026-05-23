@@ -132,6 +132,8 @@ A book has an optional list of **acts**. Acts are simple named buckets (e.g. "Ac
 
 Acts can have their own optional `StoryDateRange`. The Timeline displays acts as the broadest grouping; the Plot Grid groups columns by act when the act label is set.
 
+Right-click a chapter in the Explorer and choose **Set act…** to assign it. The picker opens with the existing acts already listed — pick one to reassign, or type a new name to create one. The list merges acts referenced by other chapters with any orphan acts on the book.
+
 Story-structure templates (such as the three-act or hero's-journey templates) pre-create acts and assign chapters to them. See [Templates](07-templates.md).
 
 ## Snapshots

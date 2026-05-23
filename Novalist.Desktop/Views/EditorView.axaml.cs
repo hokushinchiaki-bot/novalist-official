@@ -210,7 +210,6 @@ public partial class EditorView : UserControl
         vm.AddFootnoteAction = id => ExecuteScript($"insertFootnoteAtSelection('{EscapeForSingleQuoteJs(id)}')");
         vm.RemoveFootnoteAction = id => ExecuteScript($"removeFootnoteById('{EscapeForSingleQuoteJs(id)}')");
         vm.ScrollToFootnoteAction = id => ExecuteScript($"scrollToFootnoteById('{EscapeForSingleQuoteJs(id)}')");
-        vm.ApplyParagraphStyleAction = id => ExecuteScript($"applyParagraphStyle('{EscapeForSingleQuoteJs(id)}')");
         vm.SyncCommentsAction = () => SyncCommentsToWebView();
         vm.ToggleBoldAction = () => ExecuteScript("toggleBold()");
         vm.ToggleItalicAction = () => ExecuteScript("toggleItalic()");

@@ -307,12 +307,21 @@ public partial class ProjectService : IProjectService
         if (CurrentProject == null || ProjectRoot == null)
             throw new InvalidOperationException("No project loaded.");
 
+        var defaultDraft = new BookDraftMetadata
+        {
+            Id = "draft-default",
+            Name = "Draft 1",
+            FolderName = "default",
+            CreatedAt = DateTime.UtcNow,
+        };
         var book = new BookData
         {
             Id = $"book-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
             Name = bookName,
             FolderName = SanitizeFileName(bookName),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Drafts = [defaultDraft],
+            ActiveDraftId = defaultDraft.Id,
         };
 
         CurrentProject.Books.Add(book);
@@ -330,9 +339,30 @@ public partial class ProjectService : IProjectService
         var book = CurrentProject.Books.FirstOrDefault(b => b.Id == bookId)
             ?? throw new ArgumentException($"Book not found: {bookId}");
 
+        // Same book: refresh manifest from disk and exit (legacy callers rely
+        // on this to re-read scenes.json without changing the active book).
+        if (ActiveBook != null && string.Equals(ActiveBook.Id, bookId, StringComparison.OrdinalIgnoreCase))
+        {
+            await LoadScenesManifestAsync();
+            await SaveProjectAsync();
+            return;
+        }
+
+        // Flush outgoing book's draft + scenes manifest so its in-memory state
+        // is durably persisted before we swap.
+        if (ActiveBook != null)
+        {
+            await SaveActiveDraftDataAsync();
+            await SaveScenesAsync();
+        }
+
         CurrentProject.ActiveBookId = bookId;
         ActiveBook = book;
 
+        // Reload incoming book's chapter / act tree + manifest from disk.
+        book.Chapters = new List<ChapterData>();
+        book.Acts = new List<ActData>();
+        await LoadActiveDraftDataAsync();
         await LoadScenesManifestAsync();
         await SaveProjectAsync();
     }

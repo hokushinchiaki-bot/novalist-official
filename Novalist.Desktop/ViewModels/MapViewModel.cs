@@ -29,10 +29,21 @@ public partial class MapViewModel : ObservableObject
     private MapData? _activeMap;
 
     [ObservableProperty]
-    private bool _isEditMode = true;
+    private bool _isEditMode;
 
     [ObservableProperty]
     private bool _isLayerPanelOpen = true;
+
+    /// <summary>Focus peek card shown when a pin is clicked in view mode. The
+    /// MapView hosts a <c>FocusPeekCardView</c> Popup bound to this VM, mirroring
+    /// the editor's hover-peek so the user gets entity info without leaving the
+    /// map.</summary>
+    public FocusPeekViewModel FocusPeek { get; } = new();
+
+    /// <summary>Host-supplied: builds the focus-peek display data for the given
+    /// entity id. Set by MainWindow to delegate to the editor's existing
+    /// focus-peek extension (which owns the entity index).</summary>
+    public Func<string, Task<FocusPeekDisplayData?>>? BuildEntityPeekRequested { get; set; }
 
     [ObservableProperty]
     private bool _isPinPlaceMode;
@@ -998,6 +1009,17 @@ public partial class MapViewModel : ObservableObject
 
     [RelayCommand]
     private void ToggleMode() => IsEditMode = !IsEditMode;
+
+    /// <summary>Populates and shows the focus peek for the entity attached to a
+    /// pin. Called by MapView when a pin is clicked in view mode — replaces
+    /// the previous jump-to-entity-editor behavior.</summary>
+    public async Task ShowPinPeekAsync(string entityId, double left, double top)
+    {
+        if (string.IsNullOrEmpty(entityId) || BuildEntityPeekRequested == null) return;
+        var data = await BuildEntityPeekRequested.Invoke(entityId);
+        if (data == null) return;
+        FocusPeek.Show(data, left, top);
+    }
 
     [RelayCommand]
     private void ToggleLayerPanel() => IsLayerPanelOpen = !IsLayerPanelOpen;

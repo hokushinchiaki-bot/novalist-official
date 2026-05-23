@@ -207,6 +207,58 @@ public class MapViewModelTests
         Assert.NotEqual(lp, h.Vm.IsLayerPanelOpen);
     }
 
+    [AvaloniaFact]
+    public void IsEditMode_DefaultsToViewMode()
+    {
+        // Regression: maps should open in view mode so casual readers do not
+        // hit edit-only tooling by default.
+        var h = Build();
+        Assert.False(h.Vm.IsEditMode);
+    }
+
+    [AvaloniaFact]
+    public async Task ShowPinPeekAsync_PopulatesFocusPeek_WithoutOpeningEntity()
+    {
+        // Regression: clicking a pin in view mode must show the focus peek
+        // card and must NOT navigate to the full entity editor.
+        var h = Loaded();
+        var character = new CharacterData { Id = "ent-1", Name = "Alice" };
+        h.Vm.BuildEntityPeekRequested = id =>
+        {
+            Assert.Equal("ent-1", id);
+            return Task.FromResult<FocusPeekDisplayData?>(new FocusPeekDisplayData
+            {
+                EntityType = EntityType.Character,
+                Entity = character,
+                Title = "Alice",
+                TypeLabel = "Character",
+                TypeBadgeBackground = "#000",
+            });
+        };
+
+        await h.Vm.ShowPinPeekAsync("ent-1", 50, 60);
+
+        Assert.True(h.Vm.FocusPeek.IsOpen);
+        Assert.Equal("Alice", h.Vm.FocusPeek.Title);
+        Assert.Equal(50, h.Vm.FocusPeek.Left);
+        Assert.Equal(60, h.Vm.FocusPeek.Top);
+    }
+
+    [AvaloniaFact]
+    public async Task ShowPinPeekAsync_NoBuilderOrEmptyId_NoOp()
+    {
+        var h = Loaded();
+        await h.Vm.ShowPinPeekAsync("", 0, 0); // empty id guard
+        Assert.False(h.Vm.FocusPeek.IsOpen);
+
+        await h.Vm.ShowPinPeekAsync("x", 0, 0); // builder not wired
+        Assert.False(h.Vm.FocusPeek.IsOpen);
+
+        h.Vm.BuildEntityPeekRequested = _ => Task.FromResult<FocusPeekDisplayData?>(null);
+        await h.Vm.ShowPinPeekAsync("x", 0, 0); // builder returns null
+        Assert.False(h.Vm.FocusPeek.IsOpen);
+    }
+
     // ── Tool modes ──────────────────────────────────────────────────
     [AvaloniaFact]
     public void ToolModes_MutuallyExclusive_AndPush()
