@@ -64,16 +64,7 @@ The toolbar above the editor (or the **Format** menu of the editor extension, or
 
 ### Paragraph styles
 
-Apply structural paragraph styles by placing the cursor in the paragraph (or selecting multiple) and choosing a style:
-
-- **Body** — the default. Plain paragraph, indented or spaced depending on book settings.
-- **Heading** — top-level heading.
-- **Subheading** — second-level heading.
-- **Blockquote** — indented quotation block.
-- **Poetry** — preserves line breaks and uses a slightly different layout.
-- **Clear style** — reverts the paragraph to Body.
-
-Each style has a default hotkey (see [Hotkeys](26-hotkeys.md)).
+> **Known bug:** the named paragraph styles (Heading, Subheading, Blockquote, Poetry, Clear) and their default hotkeys (`Ctrl+Alt+1` through `Ctrl+Alt+4`, plus `Ctrl+Alt+0` to clear) are wired in code but currently have no working UI or visible effect in the running app. Treat this section as planned future behaviour, not current behaviour.
 
 ## Auto-replacements
 
@@ -120,7 +111,7 @@ When you hover over an entity reference in the prose (for example a character's 
 - Its primary image, if any.
 - Its short description / synopsis.
 
-Click the card to open the full entity editor in a new tab. The peek is provided by the `FocusPeekExtension` and is enabled by default. Disable from Settings if you find it intrusive.
+The peek card itself is interactive — you can scroll through it and inspect the image. To open the full entity in a tab, use the dedicated open-in-tab button on the card. The peek is provided by the `FocusPeekExtension` and is always on.
 
 ## Split editor
 

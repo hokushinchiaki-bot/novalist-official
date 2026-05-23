@@ -10,7 +10,7 @@ Click the bar-chart icon in the activity bar, or use **View → Dashboard** (or 
 
 ### Header
 
-- **Book cover image** (if set) — uploaded via the dashboard's image picker or the book editor.
+- **Book cover image** (if set) — set from the dashboard's image picker. The Dashboard is the only place to set or change the cover.
 - **Book name** — large title.
 - **Author** (from project settings, optional).
 

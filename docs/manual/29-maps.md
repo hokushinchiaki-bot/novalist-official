@@ -65,7 +65,7 @@ The clip polygon is stored in the image's natural-pixel coordinates, so it survi
 
 ## Pins
 
-Pins are screen-space markers that stay the same size regardless of zoom. Click *Add pin* in the toolbar to drop one at the centre of the viewport. A pin dialog opens with three fields:
+Pins are screen-space markers that stay the same size regardless of zoom. Click *Add pin* in the toolbar, then click on the map where you want the pin. Once placed, its settings appear in a properties panel at the bottom of the layer panel:
 
 - **Label** — text shown above the pin in the map.
 - **Link to entity** — type-ahead search across characters, locations, items, lore, and custom entity types. Linking is optional.
@@ -75,7 +75,7 @@ Move pins by dragging them. Right-click a pin for a menu: *Edit…* (re-edit lab
 
 A pin belongs to a **layer** — the one that was active when it was placed. It follows that layer's visibility, opacity, zoom-range and floor settings, and *Move to layer…* reassigns it.
 
-In view mode, clicking a pin that has a linked entity opens the entity's focus peek.
+In view mode, clicking a pin that has a linked entity currently opens that entity's editor. Showing the focus peek there instead is on the wish list.
 
 ## Labels
 

@@ -62,27 +62,25 @@ This is the on-disk shape of a project. **Do not edit the `.json` cache files by
 │   │                           # custom entity types, smart lists, settings
 │   ├── settings.json           # ProjectSettings: per-project overrides
 │   └── ...
-├── Books/
-│   └── <bookId>/
-│       ├── book.json           # BookData: name, folders, templates, plotlines, acts, calendar
-│       ├── chapters.json       # ordered chapter list
-│       ├── scenes.json         # scene manifest (per chapter)
-│       ├── Chapters/
-│       │   └── <ChapterFolder>/
-│       │       └── <Scene>.html
-│       ├── Characters/
-│       │   └── <character>.json
-│       ├── Locations/
-│       │   └── <location>.json
-│       ├── Items/
-│       │   └── <item>.json
-│       ├── Lore/
-│       │   └── <lore>.json
-│       ├── Images/
-│       │   └── ...
-│       └── Snapshots/
-│           └── <sceneId>/
-│               └── <timestamp>.json
+├── <BookFolder>/               # one folder per book, named after the book
+│   ├── .book/                  # per-book metadata (book.json, acts, etc.)
+│   ├── Drafts/
+│   │   └── <DraftFolder>/      # active draft
+│   │       └── <ChapterFolder>/
+│   │           └── <Scene>.novalist   # one file per scene; plain text inside
+│   ├── Characters/
+│   │   └── <character>.json
+│   ├── Locations/
+│   │   └── <location>.json
+│   ├── Items/
+│   │   └── <item>.json
+│   ├── Lore/
+│   │   └── <lore>.json
+│   ├── Images/
+│   │   └── ...
+│   └── Snapshots/
+│       └── <sceneId>/
+│           └── <timestamp>.json
 └── WorldBible/
     ├── Characters/
     ├── Locations/
@@ -90,7 +88,7 @@ This is the on-disk shape of a project. **Do not edit the `.json` cache files by
     └── Lore/
 ```
 
-The folder names inside a book (`Chapters`, `Characters`, etc.) are configurable per book — see `BookData` for details — but the defaults shown above are what you get from a fresh project.
+Scene files use the `.novalist` extension and contain HTML inside — you can open them in any text editor. The folder names inside a book (`Characters`, `Locations`, etc.) are configurable per book — see `BookData` for details — but the defaults shown above are what you get from a fresh project.
 
 ## Editing your project outside Novalist
 
@@ -168,7 +166,7 @@ Because everything is a regular folder of regular files, your options for safeke
 - **Cloud sync** — Dropbox, OneDrive, iCloud Drive, etc. all work. Avoid editing the same scene on two machines at the same time.
 - **Git** — Novalist has first-class Git support inside the app. See [Git](18-git.md). The recommended `.gitignore` for a Novalist project excludes only `.novalist/runtime/` and similar caches.
 
-Novalist also takes per-scene snapshots automatically on save. See [Snapshots](17-snapshots.md) for the per-scene history mechanism — it is complementary to Git, not a replacement.
+Novalist also supports per-scene snapshots — a manual version history per scene plus auto-snapshots taken before destructive operations such as Find & Replace. See [Snapshots](17-snapshots.md) for the per-scene history mechanism — it is complementary to Git, not a replacement.
 
 ## Importing from other tools
 

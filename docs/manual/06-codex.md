@@ -81,7 +81,7 @@ Beyond the four built-ins you can define your own entity types: Factions, Spells
 
 ### Defining a custom type
 
-Open the **Entity Type Manager** (Codex Hub → **Manage types** button, or `Settings → Templates → Custom Types`):
+Open the **Entity Type Manager** — either from **Codex Hub → Manage types**, or from the plus button in the entity list of the left sidebar:
 
 1. Click **Add type**.
 2. Give it a **type key** (used internally, e.g. `faction`), a **display name** (e.g. "Faction"), a **plural** (e.g. "Factions"), and an **icon** (an SVG path string).

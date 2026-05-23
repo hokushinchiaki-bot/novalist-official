@@ -18,7 +18,7 @@ A list of every extension currently installed. Each entry shows:
 - **Update** button — visible when a newer version is available in the gallery.
 - **Uninstall** button — removes the extension's files.
 
-Disabling an extension takes effect after the next restart for some hooks, but most (sidebar tabs, status bar items, content views) update immediately.
+Installing, updating, uninstalling, or toggling an extension's Enabled state requires a Novalist restart to fully take effect.
 
 ### Browse Store
 
@@ -37,7 +37,7 @@ A search box filters by name, description, and tags.
 1. Open the **Browse Store** tab.
 2. Find the extension you want.
 3. Click **Install**. The DLL and its assets are downloaded and unpacked into the user extensions folder.
-4. The extension loads immediately. Look for its activity-bar icon, sidebar tab, ribbon button, status-bar item, or settings page to confirm.
+4. **Restart Novalist** for the new extension to load. After restart, look for its activity-bar icon, sidebar tab, ribbon button, status-bar item, or settings page to confirm.
 
 Some extensions need configuration after install — check their settings page (under Settings → the extension's category).
 

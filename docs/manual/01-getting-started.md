@@ -54,7 +54,7 @@ Type into the editor. As you write you'll see:
 - A **readability badge** showing the Flesch reading-ease score, color-coded by difficulty.
 - In the bottom-right, two progress bars: your **daily goal** (set in Settings) and your **project goal**.
 
-The editor saves your scene automatically two seconds after you stop typing. There is also `Ctrl+S` to save immediately. Saved scenes are written to disk as HTML files inside the chapter folder, and a **snapshot** is taken on every save so you can roll back later.
+The editor saves your scene automatically a moment after you stop typing. There is also `Ctrl+S` to save immediately. Saved scenes are written to disk as `.novalist` files (HTML on the inside) in the chapter folder. Per-scene **snapshot** history is available too — see [Snapshots](17-snapshots.md).
 
 ## Where things live
 

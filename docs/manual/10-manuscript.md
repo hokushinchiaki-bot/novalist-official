@@ -84,7 +84,7 @@ A three-segment toggle at the top-left of the Manuscript view switches between *
 
 ## Editing from the Manuscript view
 
-You can edit inline in Manuscript mode for short tweaks. For longer work, click a scene to open it in the editor (which retains the Manuscript view in the background — you can switch back).
+You can edit inline in Manuscript mode for short tweaks. For longer work, click the scene's header — the title at the top of the scene — to open it in the editor (which retains the Manuscript view in the background — you can switch back).
 
 Comments added in the editor appear inline in the Manuscript view. Footnotes are rendered at the end of each scene in the Manuscript mode.
 

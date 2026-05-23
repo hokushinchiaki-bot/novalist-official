@@ -16,7 +16,7 @@ Backing up just the project folder is enough to safeguard your writing. Backing 
 
 ## I deleted a scene by accident. Can I get it back?
 
-Yes. Look in `<Project>/Books/<bookId>/Snapshots/<sceneId>/`. The folder remains even after the scene is deleted. Each `<timestamp>.json` is a saved snapshot containing the scene's content.
+Yes. Look in `<Project>/<BookFolder>/Snapshots/<sceneId>/`. The folder remains even after the scene is deleted. Each `<timestamp>.json` is a saved snapshot containing the scene's content.
 
 Two paths to recover:
 

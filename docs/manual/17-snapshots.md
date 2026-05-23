@@ -1,6 +1,6 @@
 # Snapshots
 
-A **snapshot** is a saved copy of a single scene at a point in time. Snapshots are taken automatically on save and can also be taken manually. They let you revert a scene to any previous state without affecting the rest of the project.
+A **snapshot** is a saved copy of a single scene at a point in time. Snapshots are created manually — and automatically by certain destructive operations such as Find & Replace and snapshot restores — so you can revert a scene to any previous state without affecting the rest of the project.
 
 Snapshots are independent per scene. Reverting one scene does not touch any other scene.
 
@@ -8,14 +8,14 @@ Snapshots are independent per scene. Reverting one scene does not touch any othe
 
 Snapshots and Git complement each other:
 
-- **Snapshots** are automatic, per-scene, and never require a commit message. They are the safety net for everyday writing — undo your way back through your last twenty saves of one scene without rebuilding the rest of the project.
+- **Snapshots** are per-scene and never require a commit message. They are the safety net for individual scenes — take one manually before a risky rewrite, or rely on the auto-snapshots taken before destructive operations like Find & Replace and snapshot restores.
 - **Git** captures the whole project at once with an authored commit message and a branch concept. Use Git for project-level versioning, sharing with co-authors, and external backup.
 
 You can (and should) use both.
 
-## How automatic snapshots work
+## How snapshots work
 
-Every time a scene saves — auto-save or manual `Ctrl+S` — a snapshot of its content is captured. The snapshot stores the full HTML content, the word count, and a timestamp. Snapshots are stored under:
+Snapshots are not taken on every save. They are taken **manually** (Edit → Take Snapshot, or right-click a scene → Take snapshot) and **automatically** by certain operations that would otherwise lose content — currently Find & Replace and snapshot restore. Each snapshot stores the full HTML content, the word count, and a timestamp. Snapshots are stored under:
 
 ```
 <Project>/Books/<bookId>/<SnapshotFolder>/<sceneId>/<timestamp>.json

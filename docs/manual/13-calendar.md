@@ -70,7 +70,7 @@ There are two ways to put a date on a chapter or scene:
 1. **Simple Date field** — a free-text string. Useful if your calendar is informal ("Day 3", "Spring"). Stored as `Date`.
 2. **Structured date range** — opens the **Story Date Range dialog** with calendar-aware controls. Stored as `DateRange`.
 
-Open the dialog from the chapter or scene right-click menu (**Set date range**). The dialog asks for start, optional end, optional start/end times, and an optional note.
+Open the dialog from the chapter or scene right-click menu (**Set date**). The dialog asks for start, optional end, optional start/end times, and an optional note.
 
 ## Where calendar dates show up
 
