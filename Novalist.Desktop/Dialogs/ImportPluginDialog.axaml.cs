@@ -36,6 +36,16 @@ public partial class ImportPluginDialog : UserControl
         InitializeComponent();
     }
 
+    protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        // Vault path TextBox is read-only (picker-only) so focus the Browse
+        // button instead. Enter then opens the folder picker immediately —
+        // user can configure the rest after picking.
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => BrowseVaultButton.Focus(),
+            Avalonia.Threading.DispatcherPriority.Input);
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);

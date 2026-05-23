@@ -32,6 +32,27 @@ public partial class MapProfileEditorDialog : UserControl
         if (Profiles.Count > 0) ProfileList.SelectedIndex = 0;
     }
 
+    protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            // ProfileNameBox is bound to the right-pane editor which only
+            // materializes once a profile is selected. When there are no
+            // profiles fall back to the profile list itself so keyboard
+            // navigation (Add button via Tab) still works.
+            if (Profiles.Count > 0)
+            {
+                ProfileNameBox?.Focus();
+                ProfileNameBox?.SelectAll();
+            }
+            else
+            {
+                ProfileList.Focus();
+            }
+        }, Avalonia.Threading.DispatcherPriority.Input);
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);

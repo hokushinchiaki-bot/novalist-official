@@ -113,17 +113,20 @@
                         <StackPanel Spacing="{StaticResource SpacingNormal}">
                             <StackPanel Spacing="{StaticResource SpacingTighter}">
                                 <TextBlock Text="{loc:Loc welcome.projectName}" FontSize="{StaticResource FontSizeBodySmall}" Foreground="{DynamicResource DimText}" />
-                                <TextBox Text="{Binding NewProjectName}"
+                                <TextBox x:Name="NewProjectNameBox"
+                                         Text="{Binding NewProjectName}"
                                          Watermark="{loc:Loc welcome.projectNamePlaceholder}"
                                          MaxLength="100"
-                                         FontSize="{StaticResource FontSizeBodyLarge}" />
+                                         FontSize="{StaticResource FontSizeBodyLarge}"
+                                         KeyDown="OnCreateFormKeyDown" />
                             </StackPanel>
                             <StackPanel Spacing="{StaticResource SpacingTighter}">
                                 <TextBlock Text="{loc:Loc welcome.bookName}" FontSize="{StaticResource FontSizeBodySmall}" Foreground="{DynamicResource DimText}" />
                                 <TextBox Text="{Binding NewBookName}"
                                          Watermark="{loc:Loc welcome.bookNamePlaceholder}"
                                          MaxLength="100"
-                                         FontSize="{StaticResource FontSizeBodyLarge}" />
+                                         FontSize="{StaticResource FontSizeBodyLarge}"
+                                         KeyDown="OnCreateFormKeyDown" />
                                 <TextBlock Text="{loc:Loc welcome.bookNameHint}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource SubtleText}" />
                             </StackPanel>
                             <StackPanel Spacing="{StaticResource SpacingTighter}">

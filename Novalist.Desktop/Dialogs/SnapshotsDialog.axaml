@@ -37,6 +37,7 @@
                             Content="{loc:Loc snapshots.take}"
                             Classes="primary"
                             Padding="14,6"
+                            IsDefault="True"
                             Click="OnTakeSnapshot" />
                     <TextBox x:Name="LabelBox"
                              Watermark="{loc:Loc snapshots.labelWatermark}"

@@ -18,9 +18,9 @@
 
                 <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" RowSpacing="{StaticResource SpacingSmall}" ColumnSpacing="{StaticResource SpacingMedium}">
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc findReplace.find}" VerticalAlignment="Center" />
-                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Pattern, Mode=TwoWay}" />
+                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="FindBox" Text="{Binding Pattern, Mode=TwoWay}" KeyDown="OnFindBoxKeyDown" />
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Loc findReplace.replace}" VerticalAlignment="Center" />
-                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Replacement, Mode=TwoWay}" />
+                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="ReplaceBox" Text="{Binding Replacement, Mode=TwoWay}" KeyDown="OnFindBoxKeyDown" />
                 </Grid>
 
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="{StaticResource SpacingMedium}">
@@ -38,7 +38,7 @@
 
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="{StaticResource SpacingMedium}" Margin="0,12,0,0">
                 <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Margin="0,0,12,0" Opacity="0.8" FontSize="{StaticResource FontSizeBodySmall}" />
-                <Button Content="{loc:Loc findReplace.find}" Command="{Binding FindCommand}" Padding="14,6" />
+                <Button Content="{loc:Loc findReplace.find}" Command="{Binding FindCommand}" Padding="14,6" IsDefault="True" />
                 <Button Content="{loc:Loc findReplace.replaceAll}" Command="{Binding ReplaceAllCommand}" Classes="primary" Padding="14,6" />
                 <Button Content="{loc:Loc dialog.close}" Click="OnClose" Padding="14,6" />
             </StackPanel>

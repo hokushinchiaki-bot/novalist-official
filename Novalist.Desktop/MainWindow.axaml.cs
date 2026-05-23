@@ -1030,8 +1030,16 @@ public partial class MainWindow : Window
 
         presenter.Content = dialog;
         dialogOverlay.IsVisible = true;
-        Avalonia.Threading.Dispatcher.UIThread.Post(() => dialog.Focus(),
-            Avalonia.Threading.DispatcherPriority.Input);
+        // Run at Background priority so any Input-priority Focus() posted from
+        // the dialog's OnAttachedToVisualTree (the canonical place each dialog
+        // focuses its primary input) wins. Only focus the dialog root as a
+        // fallback when nothing inside claimed focus — otherwise this clobbers
+        // the inner TextBox caret and pressing keys does nothing.
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (!dialog.IsKeyboardFocusWithin)
+                dialog.Focus();
+        }, Avalonia.Threading.DispatcherPriority.Background);
 
         await tcs.Task;
 

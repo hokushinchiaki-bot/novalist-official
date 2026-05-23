@@ -39,6 +39,16 @@ public partial class SmartListEditorDialog : UserControl
 
     private string? _editingId;
 
+    protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            NameBox.Focus();
+            NameBox.SelectAll();
+        }, Avalonia.Threading.DispatcherPriority.Input);
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);

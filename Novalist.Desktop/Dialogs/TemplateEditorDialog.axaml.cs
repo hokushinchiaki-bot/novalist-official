@@ -21,6 +21,16 @@ public partial class TemplateEditorDialog : UserControl
         DataContext = viewModel;
     }
 
+    protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            TemplateNameBox.Focus();
+            TemplateNameBox.SelectAll();
+        }, Avalonia.Threading.DispatcherPriority.Input);
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);

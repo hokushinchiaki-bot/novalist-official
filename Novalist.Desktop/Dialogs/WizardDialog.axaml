@@ -184,13 +184,15 @@
                         <StackPanel Spacing="{StaticResource SpacingMedium}"
                                     IsVisible="{Binding ShowStepContent}">
 
-                            <TextBox Text="{Binding TextAnswer, Mode=TwoWay}"
+                            <TextBox x:Name="WizardTextBox"
+                                     Text="{Binding TextAnswer, Mode=TwoWay}"
                                      Watermark="{Binding Placeholder}"
                                      FontSize="{StaticResource FontSizeTitleSmall}"
                                      IsVisible="{Binding IsTextStep}"
                                      IsEnabled="{Binding !IsMultilineText}" />
 
-                            <TextBox Text="{Binding TextAnswer, Mode=TwoWay}"
+                            <TextBox x:Name="WizardMultilineBox"
+                                     Text="{Binding TextAnswer, Mode=TwoWay}"
                                      Watermark="{Binding Placeholder}"
                                      AcceptsReturn="True"
                                      TextWrapping="Wrap"
@@ -198,7 +200,8 @@
                                      FontSize="{StaticResource FontSizeTitleSmall}"
                                      IsVisible="{Binding IsMultilineText}" />
 
-                            <NumericUpDown Value="{Binding NumberAnswer, Mode=TwoWay}"
+                            <NumericUpDown x:Name="WizardNumberBox"
+                                           Value="{Binding NumberAnswer, Mode=TwoWay}"
                                            Minimum="{Binding NumberMin}"
                                            Maximum="{Binding NumberMax}"
                                            Increment="1"

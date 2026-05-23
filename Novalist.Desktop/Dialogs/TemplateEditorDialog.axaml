@@ -27,6 +27,7 @@
                     <Button Content="{loc:Loc template.save}"
                             Classes="primary"
                             Padding="16,8"
+                            IsDefault="True"
                             Click="OnSave" />
                 </StackPanel>
             </Border>
@@ -40,7 +41,8 @@
                         <TextBlock Text="{loc:Loc template.templateName}"
                                    FontSize="{StaticResource FontSizeBody}"
                                    Foreground="{DynamicResource DimText}" />
-                        <TextBox Text="{Binding TemplateName}"
+                        <TextBox x:Name="TemplateNameBox"
+                                 Text="{Binding TemplateName}"
                                  IsReadOnly="{Binding IsBuiltIn}"
                                  Watermark="{loc:Loc template.templateName}" />
                     </StackPanel>

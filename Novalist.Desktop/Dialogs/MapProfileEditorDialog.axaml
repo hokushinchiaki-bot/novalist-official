@@ -40,7 +40,7 @@
                             <TextBlock Grid.Column="0" Text="{loc:Loc map.profileName}"
                                        VerticalAlignment="Center" FontSize="{StaticResource FontSizeBody}"
                                        Foreground="{DynamicResource SubtleText}" />
-                            <TextBox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" FontSize="{StaticResource FontSizeBody}" />
+                            <TextBox x:Name="ProfileNameBox" Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" FontSize="{StaticResource FontSizeBody}" />
                         </Grid>
                         <Grid ColumnDefinitions="90,Auto,Auto,*">
                             <TextBlock Grid.Column="0" Text="{loc:Loc map.profileKind}"

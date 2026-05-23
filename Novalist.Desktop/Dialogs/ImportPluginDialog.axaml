@@ -51,6 +51,7 @@
                                      IsReadOnly="True"
                                      Watermark="{loc:Loc import.vaultFolderPlaceholder}" />
                             <Button Grid.Column="1"
+                                    x:Name="BrowseVaultButton"
                                     Content="{loc:Loc welcome.browse}"
                                     Click="OnBrowseVault"
                                     Margin="4,0,0,0" />

@@ -20,6 +20,13 @@ public partial class ConfirmDialog : UserControl
         MessageText.Text = message;
     }
 
+    protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => CancelButton.Focus(),
+            Avalonia.Threading.DispatcherPriority.Input);
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);

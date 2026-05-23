@@ -1118,7 +1118,6 @@
     <Border x:Name="DialogOverlay"
             Background="{DynamicResource OverlayScrim}"
             IsVisible="False"
-            Focusable="True"
             ZIndex="200">
         <Border CornerRadius="{StaticResource RadiusLarge}"
                 HorizontalAlignment="Center"

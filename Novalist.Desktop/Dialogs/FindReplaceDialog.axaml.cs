@@ -21,11 +21,34 @@ public partial class FindReplaceDialog : UserControl
         DataContext = vm;
     }
 
+    protected override void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            FindBox.Focus();
+            FindBox.SelectAll();
+        }, Avalonia.Threading.DispatcherPriority.Input);
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
         if (e.Key == Key.Escape)
             DialogClosed.TrySetResult();
+    }
+
+    // Enter on either search field runs Find. Enter inside Replace also runs
+    // Find rather than ReplaceAll because Replace-all is destructive; we want
+    // the user to click the explicit Replace All button.
+    private void OnFindBoxKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        if (DataContext is FindReplaceViewModel vm && vm.FindCommand.CanExecute(null))
+        {
+            vm.FindCommand.Execute(null);
+            e.Handled = true;
+        }
     }
 
     private void OnClose(object? sender, RoutedEventArgs e)

@@ -56,6 +56,15 @@ public partial class ProjectImagePickerDialog : UserControl
             Result = null;
             DialogClosed.TrySetResult();
         }
+        else if (e.Key == Key.Enter && _visibleImages.Count > 0)
+        {
+            // Pick first visible image. Common flow: user types a query that
+            // narrows results to one, then presses Enter to confirm without
+            // reaching for the mouse.
+            Result = _visibleImages[0].Path;
+            DialogClosed.TrySetResult();
+            e.Handled = true;
+        }
     }
 
     private void OnSearchChanged(object? sender, TextChangedEventArgs e)

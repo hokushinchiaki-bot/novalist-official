@@ -86,6 +86,16 @@ Keys in this table use their on-screen names. A few aliases:
 | Push | `Ctrl+Shift+P` | When the active focus context is Git. |
 | Pull | `Ctrl+Shift+L` | When the active focus context is Git. |
 
+## Dialog conventions
+
+These behaviors are consistent across every dialog and overlay in Novalist:
+
+- **Auto-focus.** The first meaningful input field is focused the moment a dialog opens. For dialogs whose primary action is a button (e.g. the add-image source picker, the update prompt), that button is focused so `Enter` triggers it immediately.
+- **`Enter` confirms** the primary action — OK, Save, Create, Find, Take Snapshot, etc. Inside the Find/Replace dialog, `Enter` runs Find from either input field (Replace All is intentionally not on `Enter` because it is destructive).
+- **`Escape` cancels** every dialog. The confirm-delete dialog focuses Cancel by default for safety — press `Tab` to reach the Confirm button.
+- **Project Image Picker:** type to filter the list, then `Enter` to pick the first remaining match without reaching for the mouse.
+- **Wizard:** each step auto-focuses its primary input. `Ctrl+Enter` advances to the next step (regular `Enter` is reserved for the input, so multi-line text steps work naturally).
+
 ## Notes
 
 - Some bindings appear twice because they are context-sensitive. `Ctrl+B` is **Toggle Explorer** when the focus is outside the editor and **Bold** when the focus is in the editor. Likewise `Ctrl+Shift+P` is the Command Palette by default, except when the Git view has focus.
