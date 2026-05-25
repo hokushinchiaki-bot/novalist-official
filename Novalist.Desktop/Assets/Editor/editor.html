@@ -733,36 +733,36 @@ function schedulePageViewRepaginate() {
     }, 150);
 }
 
-function getTextOffsetInEditor() {
+function captureSelectionForRepaginate() {
     const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return -1;
-    const range = sel.getRangeAt(0);
-    if (!editor.contains(range.startContainer)) return -1;
-    const pre = document.createRange();
-    pre.selectNodeContents(editor);
-    pre.setEnd(range.startContainer, range.startOffset);
-    return pre.toString().length;
+    if (!sel || sel.rangeCount === 0) return null;
+    const r = sel.getRangeAt(0);
+    if (!editor.contains(r.startContainer)) return null;
+    // Snapshot the live (node, offset) pair. Unwrap/rewrap of .nv-page wrappers
+    // only moves these nodes around; the references stay valid, so restoring
+    // them preserves the caret exactly — including in empty paragraphs that a
+    // text-only walker would skip past.
+    return {
+        startContainer: r.startContainer,
+        startOffset: r.startOffset,
+        endContainer: r.endContainer,
+        endOffset: r.endOffset,
+    };
 }
 
-function restoreTextOffsetInEditor(offset) {
-    if (offset < 0) return;
-    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
-    let node = walker.nextNode();
-    let remaining = offset;
-    while (node) {
-        const len = node.textContent.length;
-        if (remaining <= len) {
-            const r = document.createRange();
-            r.setStart(node, remaining);
-            r.collapse(true);
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(r);
-            return;
-        }
-        remaining -= len;
-        node = walker.nextNode();
+function restoreSelectionForRepaginate(saved) {
+    if (!saved) return;
+    if (!editor.contains(saved.startContainer) || !editor.contains(saved.endContainer)) return;
+    const r = document.createRange();
+    try {
+        r.setStart(saved.startContainer, saved.startOffset);
+        r.setEnd(saved.endContainer, saved.endOffset);
+    } catch (_) {
+        return;
     }
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
 }
 
 function unwrapPages() {
@@ -779,7 +779,7 @@ function repaginatePageView() {
     pageViewRepaginating = true;
     if (pageViewMutationObserver) pageViewMutationObserver.disconnect();
     try {
-        const caretOffset = getTextOffsetInEditor();
+        const savedSelection = captureSelectionForRepaginate();
 
         // Unwrap any existing pages so we can re-measure flat content.
         unwrapPages();
@@ -821,7 +821,7 @@ function repaginatePageView() {
             group.forEach(el => page.appendChild(el));
         });
 
-        restoreTextOffsetInEditor(caretOffset);
+        restoreSelectionForRepaginate(savedSelection);
     } finally {
         pageViewRepaginating = false;
         if (pageViewMutationObserver && pageViewEnabled) {
@@ -875,21 +875,26 @@ function recenterCaret() {
     if (!typewriterEnabled) return;
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
-    const range = sel.getRangeAt(0).cloneRange();
+    const range = sel.getRangeAt(0);
 
-    // Get rect at caret. Empty range needs a temp text node to measure.
+    // Measure caret without mutating the DOM — any insertNode/removeChild here
+    // would split text nodes around the user's selection and interfere with input.
     let rect = range.getBoundingClientRect();
-    if (rect.top === 0 && rect.bottom === 0) {
-        const span = document.createElement('span');
-        span.appendChild(document.createTextNode('​'));
-        range.insertNode(span);
-        rect = span.getBoundingClientRect();
-        const parent = span.parentNode;
-        if (parent) parent.removeChild(span);
+    let top = rect.top;
+    let bottom = rect.bottom;
+    if (top === 0 && bottom === 0) {
+        // Empty block: fall back to the nearest element's rect.
+        const node = range.startContainer;
+        const el = node && node.nodeType === Node.ELEMENT_NODE ? node : (node && node.parentElement);
+        if (!el) return;
+        const elRect = el.getBoundingClientRect();
+        if (elRect.height === 0 && elRect.width === 0) return;
+        top = elRect.top;
+        bottom = elRect.bottom;
     }
 
-    if (Math.abs(rect.top - typewriterLastY) < 4) return;
-    typewriterLastY = rect.top;
+    if (Math.abs(top - typewriterLastY) < 4) return;
+    typewriterLastY = top;
 
     const viewportH = wrapper.clientHeight;
     let frac = 0.5;
@@ -897,7 +902,7 @@ function recenterCaret() {
     else if (typewriterAnchor === 'bottom') frac = 0.66;
     const targetY = viewportH * frac;
     const wrapperRect = wrapper.getBoundingClientRect();
-    const caretRelative = rect.top - wrapperRect.top;
+    const caretRelative = top - wrapperRect.top;
     const delta = caretRelative - targetY;
     if (Math.abs(delta) < 2) return;
     wrapper.scrollTop = wrapper.scrollTop + delta;
