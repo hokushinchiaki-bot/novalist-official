@@ -1,0 +1,476 @@
+<!doctype html>
+<!--
+  Novalist user manual — companion page to index.html, sharing site.css.
+  The manual content is NOT duplicated here: every chapter is fetched live
+  from docs/manual/ on the main branch (raw.githubusercontent.com) and
+  rendered client-side with marked + DOMPurify, so the repository stays
+  the single source of truth. Editing docs/manual/ updates this page
+  without a redeploy. Deployed together with the rest of /pages by
+  .github/workflows/site.yml.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>User manual — Novalist</title>
+<meta name="description" content="The complete Novalist user manual: projects, the editor, worldbuilding, plotting, timelines, maps, exporting, extensions, hotkeys and troubleshooting.">
+<link rel="canonical" href="https://drommedhar.github.io/novalist-official/manual.html">
+
+<!-- Open Graph / social -->
+<meta property="og:url" content="https://drommedhar.github.io/novalist-official/manual.html">
+<meta property="og:title" content="Novalist user manual">
+<meta property="og:description" content="Every feature of the offline-first novel-writing app, explained in detail.">
+<meta property="og:image" content="https://raw.githubusercontent.com/Drommedhar/novalist-official/main/Novalist.Desktop/splash.png">
+<meta property="og:type" content="article">
+
+<link rel="icon" href="https://raw.githubusercontent.com/Drommedhar/novalist-official/main/Novalist.Desktop/novalist.ico">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Markdown rendering + sanitizing for the manual -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"></script>
+
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- ================= NAV ================= -->
+<nav class="nav" aria-label="Main">
+  <div class="wrap nav-in">
+    <a class="brand" href="index.html">
+      <img src="https://raw.githubusercontent.com/Drommedhar/novalist-official/main/Novalist.Desktop/novalist.ico" alt="" width="28" height="28">
+      Novalist
+    </a>
+    <div class="nav-links">
+      <a href="index.html#features">Features</a>
+      <a href="index.html#download">Download</a>
+      <a href="index.html#changelog">Changelog</a>
+      <a href="manual.html" aria-current="page">Manual</a>
+    </div>
+    <div class="nav-right">
+      <a class="star-pill" id="navStars" href="https://github.com/Drommedhar/novalist-official" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .8l2.1 4.4 4.8.6-3.5 3.3.9 4.7L8 11.5l-4.3 2.3.9-4.7L1.1 5.8l4.8-.6z"/></svg>
+        <span id="navStarCount">GitHub</span>
+      </a>
+      <a class="nav-dl" href="index.html#download">Download</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+<div class="wrap manual-head">
+  <p class="sec-label">Documentation</p>
+  <h2>User manual.</h2>
+  <p class="sec-sub">
+    Every feature of Novalist, explained in detail — loaded live from
+    <a href="https://github.com/Drommedhar/novalist-official/tree/main/docs/manual" target="_blank" rel="noopener">docs/manual</a>
+    in the repository, so it always matches the source of truth.
+  </p>
+</div>
+
+<div class="wrap manual-layout">
+  <aside class="doc-toc" id="docToc" aria-label="Table of contents" hidden>
+    <p class="toc-head">Contents</p>
+    <nav id="tocLinks"></nav>
+  </aside>
+
+  <article class="doc-body" id="docBody">
+    <div class="skel" style="min-height:140px;margin-bottom:18px"></div>
+    <div class="skel" style="min-height:320px;margin-bottom:18px"></div>
+    <div class="skel" style="min-height:320px"></div>
+  </article>
+</div>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <div>
+        <div class="foot-brand">
+          <img src="https://raw.githubusercontent.com/Drommedhar/novalist-official/main/Novalist.Desktop/novalist.ico" alt="" width="26" height="26">
+          Novalist
+        </div>
+        <div class="foot-col">
+          <p>Released under the MIT License. Originally built by its author to write a book —
+            shared so it can help with yours.</p>
+        </div>
+      </div>
+      <div class="foot-links">
+        <span class="fl-head">Project</span>
+        <a href="https://github.com/Drommedhar/novalist-official" target="_blank" rel="noopener">Source on GitHub</a>
+        <a href="https://github.com/Drommedhar/novalist-official/releases" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/Drommedhar/novalist-official/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/Drommedhar/novalist-official/blob/main/LICENSE" target="_blank" rel="noopener">License</a>
+      </div>
+      <div class="foot-links">
+        <span class="fl-head">This site</span>
+        <a href="index.html#features">Features</a>
+        <a href="index.html#download">Download</a>
+        <a href="index.html#changelog">Changelog</a>
+        <a href="manual.html">User manual</a>
+      </div>
+    </div>
+    <div class="foot-truth">
+      <span>This manual is loaded live from
+        <a href="https://github.com/Drommedhar/novalist-official/tree/main/docs/manual" target="_blank" rel="noopener">docs/manual</a>
+        in the GitHub repository — it is the single source of truth.</span>
+      <span id="footUpdated"></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ==========================================================================
+   Manual page — reads the table of contents from docs/manual/README.md,
+   fetches every chapter from the repo, renders them in reading order with
+   marked + DOMPurify (same stack as index.html), builds a sidebar TOC, and
+   highlights the active chapter while scrolling. Cross-links between
+   chapter files are rewritten to in-page anchors; images resolve to raw
+   GitHub URLs. Falls back to a GitHub link if a fetch fails.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var OWNER  = 'Drommedhar';
+  var NAME   = 'novalist-official';
+  var BRANCH = 'main';
+
+  var REPO_URL   = 'https://github.com/' + OWNER + '/' + NAME;
+  var API        = 'https://api.github.com/repos/' + OWNER + '/' + NAME;
+  var RAW        = 'https://raw.githubusercontent.com/' + OWNER + '/' + NAME + '/' + BRANCH;
+  var MANUAL_DIR = 'docs/manual';
+  var MANUAL_RAW = RAW + '/' + MANUAL_DIR + '/';
+  var MANUAL_GH  = REPO_URL + '/blob/' + BRANCH + '/' + MANUAL_DIR + '/';
+
+  var CACHE_KEY = 'novalist_manual_cache_v2';
+  var CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+  function $(id) { return document.getElementById(id); }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function fmtCount(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+    return String(n);
+  }
+
+  /* Markdown → sanitized HTML (marked + DOMPurify, loaded from CDN). */
+  function md(src) {
+    if (!src) return '';
+    if (!window.marked || !window.DOMPurify) {
+      var p = el('pre'); p.textContent = src; return p.outerHTML;
+    }
+    var html = window.marked.parse(src, { mangle: false, headerIds: false, gfm: true });
+    return window.DOMPurify.sanitize(html, { ADD_ATTR: ['target', 'rel'] });
+  }
+
+  function slugify(text) {
+    return text.toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-');
+  }
+
+  /* The TOC inside docs/manual/README.md: "### Group" headings followed by
+     numbered "1. [Title](file.md) — description" items. */
+  function parseManualToc(text) {
+    var m = text.match(/\n##\s+Table of contents\s*\n([\s\S]*?)(?=\n##\s|$)/i);
+    if (!m) return null;
+    var groups = [], current = null;
+    m[1].split('\n').forEach(function (line) {
+      var g = line.match(/^###\s+(.+?)\s*$/);
+      if (g) { current = { name: g[1].trim(), items: [] }; groups.push(current); return; }
+      var it = line.match(/^\s*\d+\.\s+\[(.+?)\]\(([^)#\s]+\.md)\)\s*(?:[—–-]\s*(.*))?$/);
+      if (it) {
+        if (!current) { current = { name: '', items: [] }; groups.push(current); }
+        current.items.push({ title: it[1].trim(), file: it[2].trim() });
+      }
+    });
+    groups = groups.filter(function (g) { return g.items.length; });
+    return groups.length ? groups : null;
+  }
+
+  /* ----------------------------------------------------------- rendering */
+  var usedIds = {};
+  function uniqueId(slug) {
+    var id = slug || 'section';
+    while (usedIds[id]) id += '-x';
+    usedIds[id] = 1;
+    return id;
+  }
+
+  function resolveSrc(src, file) {
+    if (!src || /^(https?:|data:)/i.test(src)) return src;
+    try {
+      var u = new URL(src, 'https://x/' + MANUAL_DIR + '/' + file);
+      return RAW + u.pathname;
+    } catch (e) { return src; }
+  }
+
+  /* Render one markdown file into a .chapter section; record its heading
+     ids so cross-links from other chapters can be rewritten later. */
+  function renderDoc(file, text, parent, fileMap) {
+    var sec = el('section', 'chapter');
+    sec.dataset.file = file;
+    sec.innerHTML = md(text);
+
+    var map = { top: null, anchors: {} };
+    sec.querySelectorAll('h1, h2, h3, h4').forEach(function (h) {
+      var slug = slugify(h.textContent);
+      var id = uniqueId(slug);
+      h.id = id;
+      if (!(slug in map.anchors)) map.anchors[slug] = id;
+      if (!map.top && h.tagName === 'H1') map.top = id;
+    });
+    if (!map.top) {
+      var first = sec.querySelector('[id]');
+      map.top = first ? first.id : (sec.id = uniqueId(slugify(file)));
+    }
+    fileMap[file] = map;
+
+    sec.querySelectorAll('img[src]').forEach(function (img) {
+      img.src = resolveSrc(img.getAttribute('src'), file);
+      img.loading = 'lazy';
+    });
+
+    parent.appendChild(sec);
+  }
+
+  function renderMissing(item, parent, fileMap) {
+    var sec = el('section', 'chapter');
+    sec.dataset.file = item.file;
+    var hid = uniqueId(slugify(item.title));
+    var h = el('h1', null, item.title); h.id = hid;
+    sec.appendChild(h);
+    var note = el('div', 'note');
+    note.innerHTML = 'Couldn\u2019t load this chapter right now \u2014 read it directly ' +
+      '<a href="' + MANUAL_GH + item.file + '" target="_blank" rel="noopener">on GitHub</a>.';
+    sec.appendChild(note);
+    fileMap[item.file] = { top: hid, anchors: {} };
+    parent.appendChild(sec);
+  }
+
+  /* Exact anchor match first; otherwise the first heading whose slug
+     contains the fragment (the docs use a few shorthand anchors like
+     #footnotes for "The Footnotes tab" — GitHub would silently drop
+     these, we land on the right heading instead). */
+  function findAnchor(map, frag) {
+    if (!map || !frag) return null;
+    if (map.anchors[frag]) return map.anchors[frag];
+    for (var k in map.anchors) {
+      if (k.indexOf(frag) !== -1) return map.anchors[k];
+    }
+    return null;
+  }
+
+  /* After every chapter exists, rewrite all links in one pass. */
+  function rewriteLinks(body, fileMap) {
+    body.querySelectorAll('a[href]').forEach(function (a) {
+      var href = a.getAttribute('href') || '';
+      var chapter = a.closest('.chapter');
+      var file = chapter ? chapter.dataset.file : 'README.md';
+
+      if (/^(https?:|mailto:)/i.test(href)) {
+        a.target = '_blank'; a.rel = 'noopener noreferrer';
+        return;
+      }
+      if (href.charAt(0) === '#') {
+        var t = findAnchor(fileMap[file], href.slice(1));
+        if (t) a.href = '#' + t;
+        return;
+      }
+      var u;
+      try { u = new URL(href, 'https://x/' + MANUAL_DIR + '/' + file); }
+      catch (e) { return; }
+      var path = u.pathname.replace(/^\//, '');
+      var frag = u.hash ? u.hash.slice(1) : '';
+
+      if (path.indexOf(MANUAL_DIR + '/') === 0 && /\.md$/i.test(path)) {
+        var f = path.slice(MANUAL_DIR.length + 1);
+        var mm = fileMap[f];
+        if (mm) {
+          a.href = '#' + (findAnchor(mm, frag) || mm.top);
+          return;
+        }
+      }
+      a.href = REPO_URL + '/blob/' + BRANCH + '/' + path + (frag ? '#' + frag : '');
+      a.target = '_blank'; a.rel = 'noopener noreferrer';
+    });
+  }
+
+  /* Sidebar: group labels + one link per chapter, with a scroll spy that
+     highlights the chapter currently in view. */
+  function buildToc(groups, fileMap) {
+    var toc = $('tocLinks');
+    toc.innerHTML = '';
+
+    var introMap = fileMap['README.md'];
+    if (introMap) {
+      var ai = el('a', null, 'Introduction');
+      ai.href = '#' + introMap.top;
+      toc.appendChild(ai);
+    }
+    groups.forEach(function (g) {
+      if (g.name) toc.appendChild(el('p', 'toc-group', g.name));
+      g.items.forEach(function (it) {
+        var m = fileMap[it.file];
+        if (!m) return;
+        var a = el('a', null, it.title);
+        a.href = '#' + m.top;
+        toc.appendChild(a);
+      });
+    });
+    $('docToc').hidden = false;
+
+    if ('IntersectionObserver' in window) {
+      var links = toc.querySelectorAll('a');
+      var byId = {};
+      links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+      var current = null;
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            if (current) current.classList.remove('active');
+            current = byId[e.target.id];
+            if (current) current.classList.add('active');
+          }
+        });
+      }, { rootMargin: '-70px 0px -75% 0px' });
+      links.forEach(function (a) {
+        var t = document.getElementById(a.getAttribute('href').slice(1));
+        if (t) io.observe(t);
+      });
+    }
+  }
+
+  function renderManual(data) {
+    var body = $('docBody');
+    body.innerHTML = '';
+    usedIds = {};
+    var fileMap = {};
+
+    /* The manual README first — intro, conventions, data-safety notes. */
+    if (data.intro != null) renderDoc('README.md', data.intro, body, fileMap);
+
+    data.groups.forEach(function (g) {
+      g.items.forEach(function (it) {
+        var text = data.chapters[it.file];
+        if (text == null) renderMissing(it, body, fileMap);
+        else renderDoc(it.file, text, body, fileMap);
+      });
+    });
+
+    rewriteLinks(body, fileMap);
+    buildToc(data.groups, fileMap);
+    $('footUpdated').textContent = 'Data refreshed ' + new Date().toLocaleTimeString();
+
+    /* Honour a #fragment once the content exists. A chapter filename
+       (#05-editor.md) also works as a deep link. */
+    if (location.hash) {
+      var raw = decodeURIComponent(location.hash.slice(1));
+      var t = document.getElementById(raw) ||
+              (fileMap[raw] && document.getElementById(fileMap[raw].top));
+      if (t) t.scrollIntoView();
+    }
+  }
+
+  function renderFailure() {
+    var body = $('docBody');
+    body.innerHTML = '';
+    var note = el('div', 'note');
+    note.innerHTML = 'Couldn\u2019t load the manual right now \u2014 read it directly ' +
+      '<a href="' + MANUAL_GH + 'README.md" target="_blank" rel="noopener">on GitHub</a>.';
+    body.appendChild(note);
+  }
+
+  /* ----------------------------------------------------------- caching */
+  function loadCache() {
+    try {
+      var c = JSON.parse(sessionStorage.getItem(CACHE_KEY));
+      if (c && Date.now() - c.t < CACHE_TTL && c.data) return c;
+    } catch (e) { /* ignore */ }
+    return null;
+  }
+
+  function saveCache(data, stars) {
+    try {
+      sessionStorage.setItem(CACHE_KEY,
+        JSON.stringify({ t: Date.now(), data: data, stars: stars }));
+    } catch (e) { /* storage full / blocked — fine */ }
+  }
+
+  function getText(url) {
+    return fetch(url).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    });
+  }
+
+  /* --------------------------------------------------------------- boot */
+  function boot() {
+    var cached = loadCache();
+    if (cached) {
+      if (typeof cached.stars === 'number') {
+        $('navStarCount').textContent = fmtCount(cached.stars);
+      }
+      renderManual(cached.data);
+      return;
+    }
+
+    var stars = null;
+    fetch(API, { headers: { Accept: 'application/vnd.github+json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (repo) {
+        if (repo && typeof repo.stargazers_count === 'number') {
+          stars = repo.stargazers_count;
+          $('navStarCount').textContent = fmtCount(stars);
+        }
+      })
+      .catch(function () { /* nav pill keeps its "GitHub" label */ });
+
+    getText(MANUAL_RAW + 'README.md')
+      .then(function (intro) {
+        var groups = parseManualToc(intro) || [];
+        var files = [];
+        groups.forEach(function (g) {
+          g.items.forEach(function (it) { files.push(it.file); });
+        });
+        return Promise.all(files.map(function (f) {
+          return getText(MANUAL_RAW + f).catch(function () { return null; });
+        })).then(function (texts) {
+          var chapters = {};
+          files.forEach(function (f, i) { chapters[f] = texts[i]; });
+          return { intro: intro, groups: groups, chapters: chapters };
+        });
+      })
+      .then(function (data) {
+        renderManual(data);
+        saveCache(data, stars);
+      })
+      .catch(renderFailure);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+</body>
+</html>
