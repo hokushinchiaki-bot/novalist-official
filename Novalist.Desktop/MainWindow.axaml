@@ -687,7 +687,9 @@
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="*" MinHeight="80" />
                                             <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="180" MinHeight="60" />
+                                            <RowDefinition Height="180"
+                                                           MinHeight="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).IsSceneNotesVisible, Converter={x:Static conv:BoolToDoubleConverter.Instance}, ConverterParameter=60}"
+                                                           MaxHeight="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).IsSceneNotesVisible, Converter={x:Static conv:BoolToDoubleConverter.Instance}, ConverterParameter=Infinity}" />
                                         </Grid.RowDefinitions>
                                         <Grid Grid.Row="0" x:Name="EditorSplitGrid">
                                             <Grid.ColumnDefinitions>

@@ -613,6 +613,10 @@ let mentionCandidates = [];       // full list pushed by host
 let mentionFiltered = [];
 let mentionSelectedIndex = 0;
 
+// Focus scroll prevention state
+let savedScrollTop = 0;
+let isFocusing = false;
+
 // Typewriter scroll state
 let typewriterEnabled = false;
 let typewriterAnchor = 'middle';  // 'top' | 'middle' | 'bottom'
@@ -649,6 +653,9 @@ function setContent(html) {
     lastHtml = editor.innerHTML;
     isSettingContent = false;
 
+    savedScrollTop = 0;
+    wrapper.scrollTop = 0;
+
     // Trigger grammar check for the new content
     requestGrammarCheck();
 
@@ -679,43 +686,43 @@ function isEmptyHtml(html) {
 // ── Formatting Commands ─────────────────────────────────────────
 
 function toggleBold() {
-    editor.focus();
+    editor.focus({ preventScroll: true });
     document.execCommand('bold', false, null);
     notifyFormattingChanged();
 }
 
 function toggleItalic() {
-    editor.focus();
+    editor.focus({ preventScroll: true });
     document.execCommand('italic', false, null);
     notifyFormattingChanged();
 }
 
 function toggleUnderline() {
-    editor.focus();
+    editor.focus({ preventScroll: true });
     document.execCommand('underline', false, null);
     notifyFormattingChanged();
 }
 
 function alignLeft() {
-    editor.focus();
+    editor.focus({ preventScroll: true });
     document.execCommand('justifyLeft', false, null);
     notifyFormattingChanged();
 }
 
 function alignCenter() {
-    editor.focus();
+    editor.focus({ preventScroll: true });
     document.execCommand('justifyCenter', false, null);
     notifyFormattingChanged();
 }
 
 function alignRight() {
-    editor.focus();
+    editor.focus({ preventScroll: true });
     document.execCommand('justifyRight', false, null);
     notifyFormattingChanged();
 }
 
 function alignJustify() {
-    editor.focus();
+    editor.focus({ preventScroll: true });
     document.execCommand('justifyFull', false, null);
     notifyFormattingChanged();
 }
@@ -2177,8 +2184,38 @@ wrapper.addEventListener('wheel', (e) => {
 // ── Focus ───────────────────────────────────────────────────────
 
 function focusEditor() {
-    editor.focus();
+    editor.focus({ preventScroll: true });
 }
+
+// Track scroll positions for focus-gain scroll jump prevention
+wrapper.addEventListener('scroll', () => {
+    if (!isFocusing) {
+        savedScrollTop = wrapper.scrollTop;
+    }
+});
+
+// Update saved scroll top on mousedown before focus changes
+document.addEventListener('mousedown', () => {
+    if (!isFocusing) {
+        savedScrollTop = wrapper.scrollTop;
+    }
+}, true);
+
+// Prevent default scroll-to-top behavior when editor gains focus natively
+editor.addEventListener('focus', () => {
+    isFocusing = true;
+    const restore = () => {
+        if (wrapper.scrollTop !== savedScrollTop) {
+            wrapper.scrollTop = savedScrollTop;
+        }
+    };
+    restore();
+    requestAnimationFrame(restore);
+    setTimeout(() => {
+        restore();
+        isFocusing = false;
+    }, 100);
+});
 
 // ── Custom Context Menu ─────────────────────────────────────────
 

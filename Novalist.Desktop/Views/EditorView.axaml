@@ -109,6 +109,7 @@
                    HorizontalOffset="{Binding FocusPeek.Left}"
                    VerticalOffset="{Binding FocusPeek.Top}"
                    IsLightDismissEnabled="False"
+                   TakesFocusFromNativeControl="False"
                    WindowManagerAddShadowHint="False">
                 <views:FocusPeekCardView DataContext="{Binding FocusPeek}"
                                          IsHitTestVisible="True" />

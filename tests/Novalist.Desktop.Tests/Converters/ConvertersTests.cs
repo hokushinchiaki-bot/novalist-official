@@ -134,4 +134,41 @@ public class ConvertersTests
         Assert.Same(Brushes.Transparent, sut.Convert(new object?[] { false, null }, typeof(IBrush), null, Ci));
         Assert.Same(Brushes.Transparent, sut.Convert(new object?[0], typeof(IBrush), null, Ci));
     }
+
+    // ── BoolToDoubleConverter ──
+
+    [AvaloniaFact]
+    public void BoolToDouble_False_ReturnsZero()
+    {
+        var sut = BoolToDoubleConverter.Instance;
+        Assert.Equal(0.0, (double)sut.Convert(false, typeof(double), "60", Ci)!);
+        Assert.Equal(0.0, (double)sut.Convert(null, typeof(double), "60", Ci)!);
+    }
+
+    [AvaloniaFact]
+    public void BoolToDouble_True_WithValidDouble_ReturnsDouble()
+    {
+        var sut = BoolToDoubleConverter.Instance;
+        Assert.Equal(60.0, (double)sut.Convert(true, typeof(double), "60", Ci)!);
+        Assert.Equal(12.34, (double)sut.Convert(true, typeof(double), "12.34", Ci)!);
+    }
+
+    [AvaloniaFact]
+    public void BoolToDouble_True_WithInfinity_ReturnsInfinity()
+    {
+        var sut = BoolToDoubleConverter.Instance;
+        Assert.Equal(double.PositiveInfinity, (double)sut.Convert(true, typeof(double), "Infinity", Ci)!);
+    }
+
+    [AvaloniaFact]
+    public void BoolToDouble_True_WithInvalidParameter_ReturnsInfinity()
+    {
+        var sut = BoolToDoubleConverter.Instance;
+        Assert.Equal(double.PositiveInfinity, (double)sut.Convert(true, typeof(double), "not-a-number", Ci)!);
+        Assert.Equal(double.PositiveInfinity, (double)sut.Convert(true, typeof(double), null, Ci)!);
+    }
+
+    [AvaloniaFact]
+    public void BoolToDouble_ConvertBack_Throws()
+        => Assert.Throws<NotSupportedException>(() => BoolToDoubleConverter.Instance.ConvertBack(null, typeof(bool), null, Ci));
 }
