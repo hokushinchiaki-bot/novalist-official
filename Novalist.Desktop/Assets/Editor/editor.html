@@ -983,11 +983,10 @@ function setTypewriterScroll(enabled, anchor) {
     typewriterAnchor = (anchor === 'top' || anchor === 'bottom') ? anchor : 'middle';
     document.body.classList.toggle('typewriter-on', typewriterEnabled);
     typewriterLastY = -9999;
-    if (typewriterEnabled) scheduleTypewriterRecenter();
+    scheduleTypewriterRecenter();
 }
 
 function scheduleTypewriterRecenter() {
-    if (!typewriterEnabled) return;
     if (typewriterMouseDown) return;                       // user drag-selecting
     if (Date.now() < typewriterSuspendUntil) return;       // recently wheel-scrolled
     if (typewriterFrame) return;
@@ -1016,7 +1015,6 @@ wrapper.addEventListener('wheel', () => {
 }, { passive: true });
 
 function recenterCaret() {
-    if (!typewriterEnabled) return;
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
@@ -1037,19 +1035,38 @@ function recenterCaret() {
         bottom = elRect.bottom;
     }
 
-    if (Math.abs(top - typewriterLastY) < 4) return;
-    typewriterLastY = top;
-
-    const viewportH = wrapper.clientHeight;
-    let frac = 0.5;
-    if (typewriterAnchor === 'top') frac = 0.33;
-    else if (typewriterAnchor === 'bottom') frac = 0.66;
-    const targetY = viewportH * frac;
     const wrapperRect = wrapper.getBoundingClientRect();
-    const caretRelative = top - wrapperRect.top;
-    const delta = caretRelative - targetY;
-    if (Math.abs(delta) < 2) return;
-    wrapper.scrollTop = wrapper.scrollTop + delta;
+    const viewportH = wrapper.clientHeight;
+
+    if (typewriterEnabled) {
+        if (Math.abs(top - typewriterLastY) < 4) return;
+        typewriterLastY = top;
+
+        let frac = 0.5;
+        if (typewriterAnchor === 'top') frac = 0.33;
+        else if (typewriterAnchor === 'bottom') frac = 0.66;
+        const targetY = viewportH * frac;
+        const caretRelative = top - wrapperRect.top;
+        const delta = caretRelative - targetY;
+        if (Math.abs(delta) < 2) return;
+        wrapper.scrollTop = wrapper.scrollTop + delta;
+    } else {
+        // Typewriter is disabled: just keep caret in view (standard scroll-into-view)
+        const caretRelativeTop = top - wrapperRect.top;
+        const caretRelativeBottom = bottom - wrapperRect.top;
+        const padding = 40; // px margin
+
+        let delta = 0;
+        if (caretRelativeTop < padding) {
+            delta = caretRelativeTop - padding;
+        } else if (caretRelativeBottom > viewportH - padding) {
+            delta = caretRelativeBottom - (viewportH - padding);
+        }
+
+        if (Math.abs(delta) > 1) {
+            wrapper.scrollTop = wrapper.scrollTop + delta;
+        }
+    }
 }
 
 // ── Mention picker (@) ──────────────────────────────────────────
