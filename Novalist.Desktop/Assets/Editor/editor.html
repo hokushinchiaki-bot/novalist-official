@@ -2621,6 +2621,15 @@ function applyGrammarSuggestion(issueIndex, replacement) {
     const spans = editor.querySelectorAll('[data-issue-index="' + issueIndex + '"]');
     if (spans.length === 0) return;
 
+    // Strip grammar-issue classes and attributes first so the browser does not
+    // preserve the underline style when replacing the elements via insertText.
+    for (const span of spans) {
+        span.className = '';
+        span.removeAttribute('style');
+        span.removeAttribute('data-issue-type');
+        span.removeAttribute('data-issue-index');
+    }
+
     // Route the replacement through execCommand so the change lands on the
     // contentEditable undo stack and Ctrl+Z reverts it like a normal edit.
     // selectNode targets the wrapping span itself, so insertText/delete replace
