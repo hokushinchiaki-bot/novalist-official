@@ -1381,6 +1381,22 @@ function setAutoReplacements(pairsJson) {
     }
 }
 
+function getContainingBlock(node) {
+    if (!node) return null;
+    let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+    const blockTags = ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI'];
+    while (el && el !== editor) {
+        if (blockTags.includes(el.tagName)) {
+            return el;
+        }
+        if (el.parentElement === editor) {
+            return el;
+        }
+        el = el.parentElement;
+    }
+    return null;
+}
+
 function tryAutoReplace(inputText) {
     if (autoReplacements.length === 0 || !inputText) return null;
 
@@ -1390,18 +1406,30 @@ function tryAutoReplace(inputText) {
     if (!range.collapsed) return null;
 
     const textNode = range.startContainer;
-    let text, offset;
-    if (textNode.nodeType === Node.TEXT_NODE) {
-        text = textNode.textContent || '';
-        offset = range.startOffset;
-    } else {
-        // Caret is in an element node (e.g. empty <p><br></p>) — no text yet
-        text = '';
-        offset = 0;
+    
+    // Find the block element containing the caret
+    const paraEl = getContainingBlock(textNode) || editor;
+
+    // Get the text of the paragraph before the caret
+    let textBeforePara = '';
+    try {
+        const preRange = document.createRange();
+        preRange.selectNodeContents(paraEl);
+        preRange.setEnd(range.startContainer, range.startOffset);
+        textBeforePara = preRange.toString();
+    } catch (ex) {
+        // Fallback to text node if range calculation fails
+        if (textNode.nodeType === Node.TEXT_NODE) {
+            const text = textNode.textContent || '';
+            const offset = range.startOffset;
+            textBeforePara = text.slice(0, offset);
+        } else {
+            textBeforePara = '';
+        }
     }
-    // Text as it will appear after insertion
-    const textAfter = text.slice(0, offset) + inputText + text.slice(offset);
-    const lineText = textAfter.slice(0, offset + inputText.length);
+
+    // Text as it will appear after insertion up to the caret
+    const lineText = textBeforePara + inputText;
 
     for (const pair of autoReplacements) {
         // Paired quotes: same trigger, different open/close
@@ -1410,13 +1438,19 @@ function tryAutoReplace(inputText) {
                 const opens = countOccurrences(lineText, pair.startReplace);
                 const closes = countOccurrences(lineText, pair.endReplace);
                 if (opens > closes) {
-                    return pair.endReplace;
+                    return {
+                        replacement: pair.endReplace,
+                        backtrack: pair.end.length - inputText.length
+                    };
                 }
             }
         }
 
-        if (lineText.endsWith(pair.start) && pair.start.length === inputText.length) {
-            return pair.startReplace;
+        if (lineText.endsWith(pair.start)) {
+            return {
+                replacement: pair.startReplace,
+                backtrack: pair.start.length - inputText.length
+            };
         }
     }
     return null;
@@ -1451,11 +1485,8 @@ function tryDialogueCorrection() {
     const range = sel.getRangeAt(0);
     const node = range.startContainer;
 
-    // Find the paragraph element containing the caret
-    let paraEl = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-    while (paraEl && paraEl !== editor && paraEl.tagName !== 'P') {
-        paraEl = paraEl.parentElement;
-    }
+    // Find the paragraph/block element containing the caret
+    const paraEl = getContainingBlock(node);
     if (!paraEl || paraEl === editor) return;
 
     const text = paraEl.innerText || '';
@@ -1806,10 +1837,20 @@ editor.addEventListener('beforeinput', (e) => {
     if (isSettingContent) return;
     if (e.inputType !== 'insertText' || !e.data) return;
 
-    const replacement = tryAutoReplace(e.data);
-    if (replacement && replacement !== e.data) {
+    const result = tryAutoReplace(e.data);
+    if (result && result.replacement !== e.data) {
         e.preventDefault();
-        document.execCommand('insertText', false, replacement);
+
+        if (result.backtrack > 0) {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0) {
+                for (let i = 0; i < result.backtrack; i++) {
+                    sel.modify('extend', 'backward', 'character');
+                }
+            }
+        }
+
+        document.execCommand('insertText', false, result.replacement);
     }
 });
 
